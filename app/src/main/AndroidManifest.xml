@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.currency.android" android:versionCode="1" android:versionName="1.0" >
+
+   	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+
+    <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="22" />
+
+    <application android:name="org.currency.App" android:allowBackup="true"
+        android:icon="@drawable/bank_cards_64" android:label= "@string/app_name">
+
+        <activity android:name="org.currency.activity.ActivityBase"
+            android:label="@string/app_name" android:theme="@style/ThemeVS">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name="org.currency.activity.BrowserActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:label="@string/browswevs_lbl" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.PinInputActivity"
+            android:windowSoftInputMode="stateVisible"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.ContactsActivity"
+            android:label="@string/contacts_lbl" android:theme="@style/ThemeVS">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable" />
+        </activity>
+
+        <activity android:name="org.currency.activity.ContactPagerActivity"
+            android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.FragmentContainerActivity"
+            android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.DeviceRegisterActivity"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.MessageActivity" android:theme="@style/Theme.Transparent"/>
+        <activity android:name="org.currency.activity.PasswordTypeSelectorActivity"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.UserDataFormActivity"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.ReceiptPagerActivity" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.SettingsActivity" android:theme="@style/ThemeVS"/>
+        
+        <activity android:name="org.currency.activity.PatternLockInputActivity"
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
+        <activity android:name="org.currency.activity.IdCardNFCReaderActivity"
+            android:windowSoftInputMode="stateHidden"
+            android:label = "nfcIntentActivityLbl"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask" android:theme="@style/ThemeVS">
+            <!--android:noHistory="true" android:launchMode="singleTask" android:theme="@style/ThemeVS">
+            <intent-filter>
+                <action android:name="android.nfc.action.TAG_DISCOVERED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <meta-data android:name="android.nfc.action.TAG_DISCOVERED" android:resource="@xml/filter_nfc"/>-->
+        </activity>
+
+
+        <!-- This provider declaration informs the Search Manager that you have a provider of -->
+        <!-- Search suggestions, and provides information about how to access it. -->
+        <provider android:name="org.currency.util.SearchSuggestionProvider"
+                  android:authorities="org.currency.util.SuggestionProvider" />
+
+        <!-- The attribute "android:exported" must be set to "false" to restrict this content
+            provider to its own app. Otherwise, all apps could access it. -->
+        <provider android:name="org.currency.contentprovider.CurrencyContentProvider"
+            android:exported="false" android:authorities="currency.org.currency"/>
+        <provider android:name="org.currency.contentprovider.MessageContentProvider"
+            android:exported="false" android:authorities="currency.org.message"/>
+        <provider android:name="org.currency.contentprovider.OperationContentProvider"
+            android:exported="false" android:authorities="currency.org.operation"/>
+        <provider android:name="org.currency.contentprovider.ReceiptContentProvider"
+            android:exported="false" android:authorities="currency.org.receipt"/>
+        <provider android:name="org.currency.contentprovider.TransactionContentProvider"
+            android:exported="false" android:authorities="currency.org.transaction"/>
+        <provider android:name="org.currency.contentprovider.UserContentProvider"
+            android:exported="false" android:authorities="currency.org.user"/>
+
+
+        <!-- No intent filters are specified, so android:exported defaults to "false". The
+            service are only available to this app. -->
+        <service android:name="org.currency.service.PaymentService"  android:exported="false"/>
+    </application>
+</manifest>

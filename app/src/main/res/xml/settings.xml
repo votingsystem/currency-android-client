@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preference_screen">
+
+    <Preference
+        android:defaultValue="false"
+        android:key="dnieButton"
+        android:summary="@string/pref_description_dnie"
+        android:title="@string/pref_title_dnie" />
+
+    <Preference android:title="@string/crypto_device_access_mode_lbl"
+        android:key="cryptoAccessButton"/>
+
+    <Preference android:title="@string/about_msg"
+        android:key="aboutAppButton"/>
+
+</PreferenceScreen>
