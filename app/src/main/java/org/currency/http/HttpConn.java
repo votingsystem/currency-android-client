@@ -9,6 +9,7 @@ import org.currency.util.Constants;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
@@ -36,7 +37,7 @@ public class HttpConn {
     private HttpConn() {
         if (Constants.IS_DEBUG_SESSION) {
             LOGD(TAG + ".HttpConn", "DEBUG_SESSION, Allowing unsafe connections!!!");
-            client = getUnsafeOkHttpClient();
+            client = getUnsafeHttpClient();
         } else
             client = new OkHttpClient();
     }
@@ -124,7 +125,7 @@ public class HttpConn {
         return responseDto;
     }
 
-    private static OkHttpClient getUnsafeOkHttpClient() {
+    private static OkHttpClient getUnsafeHttpClient() {
         try {
             // Create a trust manager that does not validate certificate chains
             final TrustManager[] trustAllCerts = new TrustManager[]{
@@ -145,22 +146,36 @@ public class HttpConn {
                         }
                     }
             };
+            X509TrustManager x509TrustManager = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+            };
             final SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
             final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(sslSocketFactory);
+            builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
+
             builder.hostnameVerifier(new HostnameVerifier() {
                 @Override
                 public boolean verify(String hostname, SSLSession session) {
                     return true;
                 }
             });
-
-            OkHttpClient okHttpClient = builder.build();
-            return okHttpClient;
+            return builder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -35,7 +35,7 @@ ext {
 dependencies {
     //see https://github.com/votingsystem/votingsystem-android-bouncycastle
     compile files('libs/bouncycastle-0.8.0-SNAPSHOT.jar')
-    compile "com.squareup.okhttp3:okhttp:3.5.0"
+    compile "com.squareup.okhttp3:okhttp:3.6.0"
     compile "com.squareup.okio:okio:1.11.0"
     compile "net.sf.kxml:kxml2:2.3.0"
 
