@@ -53,8 +53,8 @@ public class ContactsActivity extends AppCompatActivity {
 
     private void setProgressDialogVisible(final boolean isVisible) {
         if (isVisible) {
-            ProgressDialogFragment.showDialog(getString(R.string.loading_data_msg),
-                    getString(R.string.loading_info_msg), getSupportFragmentManager());
+            ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
+                    getString(R.string.loading_data_msg), getSupportFragmentManager());
         } else ProgressDialogFragment.hide(getSupportFragmentManager());
     }
 

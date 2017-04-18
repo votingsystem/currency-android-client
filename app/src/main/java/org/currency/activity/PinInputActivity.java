@@ -20,6 +20,7 @@ import org.currency.dto.OperationPassword;
 import org.currency.dto.ResponseDto;
 import org.currency.ui.DialogButton;
 import org.currency.util.Constants;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 

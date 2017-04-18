@@ -144,8 +144,8 @@ public class MessagesGridFragment extends Fragment implements
 
     private void setProgressDialogVisible(boolean isVisible) {
         if(isVisible){
-            ProgressDialogFragment.showDialog(getString(R.string.loading_data_msg),
-                    getString(R.string.loading_info_msg), getFragmentManager());
+            ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
+                    getString(R.string.loading_data_msg), getFragmentManager());
         } else ProgressDialogFragment.hide(getFragmentManager());
     }
 

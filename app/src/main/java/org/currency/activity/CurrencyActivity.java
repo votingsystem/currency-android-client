@@ -191,8 +191,8 @@ public class CurrencyActivity extends AppCompatActivity {
 
     private void setProgressDialogVisible(boolean isVisible, String caption, String message) {
         if(isVisible){
-            if(caption == null) caption = getString(R.string.loading_data_msg);
-            if(message == null) message = getString(R.string.loading_info_msg);
+            if(caption == null) caption = getString(R.string.wait_msg);
+            if(message == null) message = getString(R.string.loading_data_msg);
             ProgressDialogFragment.showDialog(caption, message, getSupportFragmentManager());
         } else ProgressDialogFragment.hide(getSupportFragmentManager());
     }
@@ -233,7 +233,7 @@ public class CurrencyActivity extends AppCompatActivity {
         public CurrencyFetcher() { }
 
         @Override protected void onPreExecute() { setProgressDialogVisible(true,
-                getString(R.string.loading_data_msg), getString(R.string.loading_info_msg)); }
+                getString(R.string.wait_msg), getString(R.string.loading_data_msg)); }
 
         @Override protected ResponseDto doInBackground(String... urls) {
             String currencyURL = urls[0];

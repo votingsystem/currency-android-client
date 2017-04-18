@@ -214,8 +214,8 @@ public class QRActionsFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            setProgressDialogVisible(true, getString(R.string.loading_data_msg),
-                    getString(R.string.loading_info_msg));
+            setProgressDialogVisible(true, getString(R.string.wait_msg),
+                    getString(R.string.loading_data_msg));
         }
 
         @Override
@@ -271,8 +271,8 @@ public class QRActionsFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            setProgressDialogVisible(true, getString(R.string.loading_data_msg),
-                    getString(R.string.loading_info_msg));
+            setProgressDialogVisible(true, getString(R.string.wait_msg),
+                    getString(R.string.loading_data_msg));
         }
 
         @Override

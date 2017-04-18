@@ -30,8 +30,6 @@ import org.currency.util.Utils;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collection;
 
 import static org.currency.util.LogUtils.LOGD;
 
@@ -113,7 +111,7 @@ public class DeviceRegisterActivity extends AppCompatActivity {
         }
 
         @Override protected void onPreExecute() {
-            ProgressDialogFragment.showDialog(getString(R.string.loading_data_msg),
+            ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
                     getString(R.string.sending_register_data_msg), getSupportFragmentManager());
         }
 

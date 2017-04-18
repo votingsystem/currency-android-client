@@ -163,8 +163,8 @@ public class MessageFormFragment extends Fragment {
 
     private void setProgressDialogVisible(String caption, String message, boolean isVisible) {
         if(isVisible){
-            if(caption == null) caption = getString(R.string.loading_data_msg);
-            if(message == null) message = getString(R.string.loading_info_msg);
+            if(caption == null) caption = getString(R.string.wait_msg);
+            if(message == null) message = getString(R.string.loading_data_msg);
             ProgressDialogFragment.showDialog(caption, message, getFragmentManager());
         } else ProgressDialogFragment.hide(getFragmentManager());
     }

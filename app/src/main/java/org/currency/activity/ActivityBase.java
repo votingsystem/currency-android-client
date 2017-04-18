@@ -288,8 +288,8 @@ public class ActivityBase extends AppCompatActivity
         public EntityLoader() { }
 
         @Override protected void onPreExecute() {
-            ProgressDialogFragment.showDialog(getString(R.string.loading_data_msg),
-                    getString(R.string.loading_info_msg), getSupportFragmentManager());
+            ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
+                    getString(R.string.loading_data_msg), getSupportFragmentManager());
         }
 
         @Override protected MetadataDto doInBackground(String... urls) {

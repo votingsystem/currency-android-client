@@ -4,12 +4,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 
 import org.currency.activity.DeviceRegisterActivity;
-import org.currency.activity.PasswordInputStep;
 import org.currency.activity.PasswordTypeSelectorActivity;
 import org.currency.android.R;
 import org.currency.dto.OperationPassword;
 import org.currency.ui.DialogButton;
 import org.currency.util.Constants;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 

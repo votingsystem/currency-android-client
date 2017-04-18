@@ -133,7 +133,7 @@ public class TransactionGridFragment extends Fragment
         new Handler(){
             @Override public void handleMessage(Message msg) {
                 if (isVisible) {
-                    ProgressDialogFragment.showDialog(getString(R.string.loading_info_msg),
+                    ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
                             getString(R.string.loading_data_msg), getFragmentManager());
                 } else ProgressDialogFragment.hide(getFragmentManager());
             }

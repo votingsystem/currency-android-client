@@ -16,14 +16,10 @@
     <string name="processing_lbl">procesando</string>
     <string name="initializing_app_lbl">preparando aplicación</string>
     <string name="publishing_document_msg">publicando documento...</string>
-
-    <string name="loading_info_msg">cargando información, por favor espere</string>
     <string name="sending_register_data_msg">Dando de alta dispositivo</string>
     <string name="operationNotFoundErrorMsg">operación desconocida</string>
-    <string name="eventVSDataWithErrors">errores en datos del evento</string>
     <string name="statusCodeNotFoundErrorMsg">falta código de estado</string>
     <string name="errorEmail">debe proporcionar una dirección de correo válida</string>
-    <string name="eventVsCancellationDataErrorMsg">error en los datos de cancelación de evento</string>
     <string name="receiverNotFoundErrorMsg">falta el name de destinatario del documento firmado</string>
     <string name="panel_principal_lbl">panel principal</string>
     <string name="search_hint">buscar</string>

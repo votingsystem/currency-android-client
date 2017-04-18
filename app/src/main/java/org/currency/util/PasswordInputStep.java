@@ -1,4 +1,4 @@
-package org.currency.activity;
+package org.currency.util;
 
 /**
  * Licence: https://github.com/votingsystem/votingsystem/wiki/Licencia
