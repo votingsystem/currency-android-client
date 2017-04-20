@@ -35,7 +35,6 @@ import org.currency.dto.metadata.MetadataDto;
 import org.currency.http.ContentType;
 import org.currency.http.HttpConn;
 import org.currency.http.MediaType;
-import org.currency.socket.SocketOperation;
 import org.currency.util.ActivityResult;
 import org.currency.util.Constants;
 import org.currency.util.JSON;
@@ -289,7 +288,7 @@ public class QRActionsFragment extends Fragment {
 
                 App.getInstance().getSessionInfo().loadIssuedCerts(certificationResponse);
                 MessageDto messageDto = new MessageDto();
-                messageDto.setSocketOperation(SocketOperation.MSG_TO_DEVICE).setDeviceToUUID(qrMessage.getUUID());
+                //messageDto.setOperation(OperationType.MSG_TO_DEVICE).setDeviceToUUID(qrMessage.getUUID());
 
                 MessageDto messageContent = new MessageDto();
                 messageContent.setOperation(new OperationTypeDto(

@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -14,6 +15,8 @@ import org.currency.http.ContentType;
 import org.currency.util.JSON;
 import org.currency.util.ObjectUtils;
 import org.currency.util.OperationType;
+
+import java.io.IOException;
 
 /**
  * Licence: https://github.com/votingsystem/votingsystem/wiki/Licencia
@@ -372,8 +375,24 @@ public class ResponseDto<T> implements Parcelable {
         return JSON.getMapper().readValue(getMessage(), type);
     }
 
+    @JsonIgnore
+    public ResponseDto getErrorResponse() throws IOException {
+        ResponseDto responseDto = null;
+        if(contentType == null)
+            return new ResponseDto(statusCode, messageBytes, contentType);
+        switch (contentType) {
+            case JSON:
+                responseDto = JSON.getMapper().readValue(messageBytes, ResponseDto.class);
+                break;
+            default:
+                responseDto = new ResponseDto(statusCode, messageBytes, contentType);
+        }
+        return responseDto;
+    }
+
     public ResponseDto setCmsMessage(CMSSignedMessage cmsMessage) {
         this.cmsMessage = cmsMessage;
         return this;
     }
+
 }

@@ -2,7 +2,6 @@ package org.currency.dto.identity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.currency.App;
 import org.currency.dto.AddressDto;
@@ -17,7 +16,6 @@ import org.currency.util.OperationType;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RegisterDto {
 
-    @JsonProperty("Operation")
     private OperationTypeDto operation;
     private AddressDto address;
     private UserDto user;

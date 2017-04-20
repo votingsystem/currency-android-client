@@ -64,13 +64,13 @@ public enum OperationType {
     @JsonProperty("GET_CURRENCY_TRANSACTION")
     GET_CURRENCY_TRANSACTION("/api/transaction/currency"),
     @JsonProperty("INIT_MOBILE_SESSION")
-    INIT_MOBILE_SESSION("/api/device/init-mobile-session"),
+    INIT_MOBILE_SESSION("/api/session/init-mobile"),
     @JsonProperty("SESSION_CERTIFICATION_DATA")
-    SESSION_CERTIFICATION_DATA("/api/device/session-certification-data"),
+    SESSION_CERTIFICATION_DATA("/api/session/verify-mobile-browser-session-certificates"),
     @JsonProperty("SESSION_CERTIFICATION")
     SESSION_CERTIFICATION("/api/cert-issuer/session-csr"),
     @JsonProperty("INIT_BROWSER_SESSION")
-    INIT_BROWSER_SESSION("/api/device/init-browser-session"),
+    INIT_BROWSER_SESSION("/api/session/init-browser"),
     @JsonProperty("CONNECTED_DEVICES")
     CONNECTED_DEVICES("/api/device/connected-device-by-user-uuid"),
     @JsonProperty("DEVICE_BY_UUID")

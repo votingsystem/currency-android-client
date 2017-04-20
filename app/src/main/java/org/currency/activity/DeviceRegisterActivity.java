@@ -27,6 +27,7 @@ import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 import org.currency.util.Utils;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -146,6 +147,11 @@ public class DeviceRegisterActivity extends AppCompatActivity {
                 }
             } else {
                 captionTextView.setText(getString(R.string.error_lbl));
+                try {
+                    responseDto = responseDto.getErrorResponse();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 messagenTextView.setText(responseDto.getMessage());
             }
             confirm_button.setVisibility(View.VISIBLE);

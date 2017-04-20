@@ -31,6 +31,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +43,10 @@ import static org.currency.util.LogUtils.LOGD;
 public class Utils {
 
     public static final String TAG = Utils.class.getSimpleName();
+
+    public static String localeToLanguageTag () {
+        return Locale.getDefault().getLanguage() + "-" + Locale.getDefault().getCountry();
+    }
 
     public static void launchQRScanner(Activity activity) {
         IntentIntegrator integrator = new IntentIntegrator(activity);

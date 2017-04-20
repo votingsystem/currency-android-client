@@ -136,8 +136,9 @@ public class PaymentService extends IntentService {
                             if(transactionDto.getSocketMessage() != null) {
                                 //this is to send the signed receipts to the device with the QR code
                                 MessageDto socketRespDto = transactionDto.getSocketMessage()
-                                        .getResponse(ResponseDto.SC_OK, null, sessionDevice.getUUID(),
-                                        receipt.toPEM(), operationType.setType(OperationType.PAYMENT_CONFIRM));
+                                        .getResponse(ResponseDto.SC_OK, new String(receipt.toPEM()),
+                                        sessionDevice.getUUID(), null,
+                                        operationType.setType(OperationType.PAYMENT_CONFIRM));
                                 socketRespDto.setSignedMessageBase64(base64Receipt);
                                 //backup to recover from fails
                                 transactionDto.setSocketMessage(socketRespDto);
@@ -170,8 +171,8 @@ public class PaymentService extends IntentService {
                             String message = transactionDto.validateReceipt(pkcs7Response, false);
                             if(transactionDto.getSocketMessage() != null) {
                                 MessageDto socketRespDto = transactionDto.getSocketMessage()
-                                        .getResponse(ResponseDto.SC_OK, null, sessionDevice.getUUID(),
-                                        pkcs7Response.toPEM(),
+                                        .getResponse(ResponseDto.SC_OK, new String(pkcs7Response.toPEM()),
+                                        sessionDevice.getUUID(),null,
                                         operationType.setType(OperationType.PAYMENT_CONFIRM));
                                 sendSocketMessage(socketRespDto);
                                 responseDto.setMessage(message);
@@ -213,7 +214,7 @@ public class PaymentService extends IntentService {
                                 String currencyChangeCert = (String) responseDto.getData();
                                 MessageDto socketRespDto = transactionDto.getSocketMessage()
                                         .getResponse(ResponseDto.SC_OK, currencyChangeCert,
-                                        sessionDevice.getUUID(), pkcs7Response.toPEM(),
+                                        sessionDevice.getUUID(), new String(pkcs7Response.toPEM()),
                                         operationType.setType(OperationType.PAYMENT_CONFIRM));
                                 sendSocketMessage(socketRespDto);
                                 responseDto.setMessage(message);

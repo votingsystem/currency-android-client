@@ -86,7 +86,6 @@ public class ActivityBase extends AppCompatActivity
         setContentView(R.layout.activity_base);
         Toolbar toolbar = UIUtils.setSupportActionBar(this);
         app = (App) getApplicationContext();
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);

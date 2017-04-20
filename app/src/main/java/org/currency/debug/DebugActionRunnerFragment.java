@@ -22,6 +22,7 @@ import org.currency.debug.actions.NFCActivityAction;
 import org.currency.debug.actions.PatternLockAction;
 import org.currency.debug.actions.PrefsAction;
 import org.currency.debug.actions.RegisterAction;
+import org.currency.debug.actions.SignDocumentAndSendAction;
 
 import static org.currency.util.LogUtils.LOGD;
 
@@ -44,6 +45,7 @@ public class DebugActionRunnerFragment extends Fragment {
         tests.addView(createTestAction(new PrefsAction()));
         tests.addView(createTestAction(new BrowserAction()));
         tests.addView(createTestAction(new RegisterAction()));
+        tests.addView(createTestAction(new SignDocumentAndSendAction()));
         tests.addView(createTestAction(new NFCActivityAction((App) getActivity().getApplicationContext())));
         setHasOptionsMenu(true);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(

@@ -2,7 +2,6 @@ package org.currency.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.currency.util.OperationType;
 
@@ -13,9 +12,7 @@ import org.currency.util.OperationType;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OperationTypeDto<T> {
 
-    @JsonProperty("Type")
     private OperationType type;
-    @JsonProperty("EntityId")
     private String entityId;
 
     public OperationTypeDto() {}

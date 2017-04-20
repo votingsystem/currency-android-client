@@ -95,7 +95,8 @@ public class CurrencyActivity extends AppCompatActivity {
                                         responseDto.getMessageBytes(), DeviceDto.class);
                                 MessageDto socketMessage = MessageDto.getCurrencyWalletChangeRequest(
                                         App.getInstance().getSessionInfo().getSessionDevice(),
-                                        deviceTo, Arrays.asList(currency));
+                                        deviceTo, Arrays.asList(currency),
+                                        App.getInstance().getCurrencyService().getEntity().getId());
                                 Intent startIntent = new Intent(CurrencyActivity.this,  SocketService.class);
                                 startIntent.putExtra(Constants.MESSAGE_KEY, JSON.writeValueAsString(socketMessage));
                                 startIntent.putExtra(Constants.CALLER_KEY, broadCastId);
