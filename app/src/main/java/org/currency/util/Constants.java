@@ -52,6 +52,8 @@ public class Constants {
     public static final String ANDROID_PROVIDER                   = "AndroidOpenSSL";
     public static final String WEB_SOCKET_BROADCAST_ID            = "WEB_SOCKET_BROADCAST_ID";
 
+    //Result Code keys
+    public static final int RC_REQUEST_OPERATION_PASSW       = 10000;
 
     //Intent keys
     public static final String BOOTSTRAP_DONE   = "BOOTSTRAP_DONE";

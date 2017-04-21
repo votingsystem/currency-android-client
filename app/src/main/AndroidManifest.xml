@@ -48,6 +48,9 @@
         <activity android:name="org.currency.activity.DeviceRegisterActivity"
             android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
 
+        <activity android:name="org.currency.activity.SignAndSendActivity"
+            android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>
+
         <activity android:name="org.currency.activity.MessageActivity" android:theme="@style/Theme.Transparent"/>
         <activity android:name="org.currency.activity.PasswordTypeSelectorActivity"
             android:screenOrientation="portrait" android:theme="@style/ThemeVS"/>

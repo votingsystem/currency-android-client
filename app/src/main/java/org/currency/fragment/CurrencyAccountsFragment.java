@@ -176,7 +176,7 @@ public class CurrencyAccountsFragment extends Fragment {
         Intent startIntent = new Intent(getActivity(), PaymentService.class);
         startIntent.putExtra(Constants.OPERATION_KEY, OperationType.CURRENCY_ACCOUNTS_INFO);
         startIntent.putExtra(Constants.CALLER_KEY, broadCastId);
-        setProgressDialogVisible(true, getString(R.string.loading_data_msg),
+        setProgressDialogVisible(true, getString(R.string.wait_msg),
                 getString(R.string.fetching_user_accounts_info_msg));
         getActivity().startService(startIntent);
     }

@@ -51,7 +51,10 @@ import org.currency.App;
 import org.currency.activity.ActivityBase;
 import org.currency.activity.FragmentContainerActivity;
 import org.currency.activity.MessageActivity;
+import org.currency.activity.PatternLockInputActivity;
+import org.currency.activity.PinInputActivity;
 import org.currency.android.R;
+import org.currency.dto.OperationPassword;
 import org.currency.dto.ResponseDto;
 import org.currency.dto.UserDto;
 import org.currency.fragment.MessageDialogFragment;
@@ -67,6 +70,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import static org.currency.dto.OperationPassword.InputType.PATTER_LOCK;
 import static org.currency.util.LogUtils.LOGD;
 
 /**
@@ -228,17 +232,6 @@ public class UIUtils {
         }
     }
 
-    public static String getPollText(final Context context, long start, long end) {
-        long now = Calendar.getInstance().getTimeInMillis();
-        if (now < start) {
-            return "";
-        } else if (start <= now && now <= end) {
-            return "";
-        } else {
-            return "";
-        }
-    }
-
     /**
      * Given a snippet string with matching segments surrounded by curly
      * braces, turn those areas into bold spans, removing the curly braces.
@@ -260,16 +253,6 @@ public class UIUtils {
             delta += 2;
         }
         return builder;
-    }
-
-    public static void preferPackageForIntent(Context context, Intent intent, String packageName) {
-        PackageManager pm = context.getPackageManager();
-        for (ResolveInfo resolveInfo : pm.queryIntentActivities(intent, 0)) {
-            if (resolveInfo.activityInfo.packageName.equals(packageName)) {
-                intent.setPackage(packageName);
-                break;
-            }
-        }
     }
 
     public static boolean isTablet(Context context) {
@@ -314,96 +297,8 @@ public class UIUtils {
         return params;
     }
 
-    // Whether a feedback notification was fired for a particular session. In the event that a
-    // feedback notification has not been fired yet, return false and set the bit.
-    public static boolean isFeedbackNotificationFiredForSession(Context context, String sessionId) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final String key = String.format("feedback_notification_fired_%s", sessionId);
-        boolean fired = sp.getBoolean(key, false);
-        sp.edit().putBoolean(key, true).commit();
-        return fired;
-    }
-
-    // Clear the flag that says a notification was fired for the given session.
-    // Typically used to debug notifications.
-    public static void unmarkFeedbackNotificationFiredForSession(Context context, String sessionId) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final String key = String.format("feedback_notification_fired_%s", sessionId);
-        sp.edit().putBoolean(key, false).commit();
-    }
-
-    // Shows whether a notification was fired for a particular session time block. In the
-    // event that notification has not been fired yet, return false and set the bit.
-    public static boolean isNotificationFiredForBlock(Context context, String blockId) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        final String key = String.format("notification_fired_%s", blockId);
-        boolean fired = sp.getBoolean(key, false);
-        sp.edit().putBoolean(key, true).commit();
-        return fired;
-    }
-
-    private static final int[] RES_IDS_ACTION_BAR_SIZE = {android.R.attr.actionBarSize};
-
-    /**
-     * Calculates the Action Bar height in pixels.
-     */
-    public static int calculateActionBarSize(Context context) {
-        if (context == null) {
-            return 0;
-        }
-        Resources.Theme curTheme = context.getTheme();
-        if (curTheme == null) {
-            return 0;
-        }
-        TypedArray att = curTheme.obtainStyledAttributes(RES_IDS_ACTION_BAR_SIZE);
-        if (att == null) {
-            return 0;
-        }
-        float size = att.getDimension(0, 0);
-        att.recycle();
-        return (int) size;
-    }
-
-    public static int setColorAlpha(int color, float alpha) {
-        int alpha_int = Math.min(Math.max((int) (alpha * 255.0f), 0), 255);
-        return Color.argb(alpha_int, Color.red(color), Color.green(color), Color.blue(color));
-    }
-
-    public static int scaleColor(int color, float factor, boolean scaleAlpha) {
-        return Color.argb(scaleAlpha ? (Math.round(Color.alpha(color) * factor)) : Color.alpha(color),
-                Math.round(Color.red(color) * factor), Math.round(Color.green(color) * factor),
-                Math.round(Color.blue(color) * factor));
-    }
-
     public static boolean hasActionBar(Activity activity) {
         return (((AppCompatActivity) activity).getSupportActionBar() != null);
-    }
-
-    public static void setStartPadding(final Context context, View view, int padding) {
-        if (isRtl(context)) {
-            view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), padding, view.getPaddingBottom());
-        } else {
-            view.setPadding(padding, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static boolean isRtl(final Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return false;
-        } else {
-            return context.getResources().getConfiguration().getLayoutDirection()
-                    == View.LAYOUT_DIRECTION_RTL;
-        }
-    }
-
-    public static void setAccessibilityIgnore(View view) {
-        view.setClickable(false);
-        view.setFocusable(false);
-        view.setContentDescription("");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        }
     }
 
     public static void launchEmbeddedFragment(String className, Context context) {
@@ -478,11 +373,6 @@ public class UIUtils {
         return dialog;
     }
 
-    public static AlertDialog.Builder getMessageDialogBuilder(ResponseDto responseDto,
-                                                              Context context) {
-        return getMessageDialogBuilder(responseDto.getCaption(), responseDto.getMessage(), context);
-    }
-
     public static void showPasswordRequiredDialog(final Activity activity) {
         DialogButton positiveButton = new DialogButton(activity.getString(R.string.ok_lbl),
                 new DialogInterface.OnClickListener() {
@@ -542,7 +432,7 @@ public class UIUtils {
         }
     }
 
-    public static void fillAddressInfo(LinearLayout linearLayout, Context contex) throws IOException {
+    public static void fillAddressInfo(LinearLayout linearLayout) throws IOException {
         UserDto user = PrefUtils.getAppUser();
         ((TextView)linearLayout.findViewById(R.id.name)).setText(user.getAddress().getAddress());
         ((TextView)linearLayout.findViewById(R.id.postal_code)).setText(user.getAddress().getPostalCode());
@@ -564,6 +454,23 @@ public class UIUtils {
                         }
                     });
             UIUtils.showMessageDialog(builder);
+        }
+    }
+
+    public static void launchPasswordInputActivity(Activity context) {
+        OperationPassword operationPassword = PrefUtils.getOperationPassword();
+        Intent intent = null;
+        if (operationPassword != null) {
+            switch (operationPassword.getInputType()) {
+                case PATTER_LOCK:
+                    intent = new Intent(context, PatternLockInputActivity.class);
+                    break;
+                case PIN:
+                    intent = new Intent(context, PinInputActivity.class);
+                    break;
+            }
+            intent.putExtra(Constants.STEP_KEY, PasswordInputStep.PIN_REQUEST);
+            context.startActivityForResult(intent, Constants.RC_REQUEST_OPERATION_PASSW);
         }
     }
 

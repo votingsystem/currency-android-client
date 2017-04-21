@@ -124,8 +124,7 @@ public class PaymentFragment extends Fragment {
                 switch(transactionDto.getOperation()) {
                     case DELIVERY_WITH_PAYMENT:
                     case DELIVERY_WITHOUT_PAYMENT:
-                        UIUtils.fillAddressInfo((LinearLayout)rootView.findViewById(R.id.address_info),
-                                getActivity());
+                        UIUtils.fillAddressInfo((LinearLayout)rootView.findViewById(R.id.address_info));
                         break;
                 }
             }

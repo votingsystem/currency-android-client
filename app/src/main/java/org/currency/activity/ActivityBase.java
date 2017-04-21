@@ -308,8 +308,14 @@ public class ActivityBase extends AppCompatActivity
                                 new EntityLoader().execute();
                             }
                         });
+                DialogButton negativeButton = new DialogButton(getString(R.string.cancel_lbl),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                dialog.dismiss();
+                            }
+                        });
                 UIUtils.showMessageDialog(getString(R.string.error_lbl), getString(
-                        R.string.missing_server_connection), positiveButton, null, ActivityBase.this);
+                        R.string.missing_server_connection), positiveButton, negativeButton, ActivityBase.this);
             }
         }
     }

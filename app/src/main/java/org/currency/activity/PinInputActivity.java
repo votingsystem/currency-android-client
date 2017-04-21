@@ -95,6 +95,9 @@ public class PinInputActivity extends AppCompatActivity {
         switch (inputStep) {
             case PIN_REQUEST:
                 getSupportActionBar().setTitle(R.string.pin_lbl);
+                if (passw == null) {
+                    return true;
+                }
                 if (!operationPassword.validateInput(passw, this)) {
                     msgTextView.setText(getString(R.string.pin_error_lbl));
                     pinText.setText("");

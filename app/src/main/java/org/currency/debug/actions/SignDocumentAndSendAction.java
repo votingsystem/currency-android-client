@@ -6,10 +6,20 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.currency.App;
 import org.currency.activity.BrowserActivity;
+import org.currency.activity.SignAndSendActivity;
 import org.currency.debug.DebugAction;
+import org.currency.dto.OperationDto;
+import org.currency.dto.OperationTypeDto;
+import org.currency.dto.metadata.MetadataDto;
 import org.currency.util.Constants;
+import org.currency.util.JSON;
+import org.currency.util.OperationType;
+
+import java.util.UUID;
 
 import static org.currency.util.LogUtils.LOGD;
 
@@ -28,9 +38,18 @@ public class SignDocumentAndSendAction implements DebugAction {
             protected Void doInBackground(Context... contexts) {
                 String targetURL = "https://voting.ddns.net/currency-server/";
                 LOGD(TAG, "doInBackground - targetURL: " + targetURL);
-                Intent intent = new Intent(App.getInstance(), BrowserActivity.class);
+                Intent intent = new Intent(App.getInstance(), SignAndSendActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra(Constants.URL_KEY, targetURL);
+                MetadataDto currencyService = App.getInstance().getCurrencyService();
+                OperationDto operation = new OperationDto(new OperationTypeDto(
+                        OperationType.CURRENCY_REQUEST,
+                        currencyService.getEntity().getId())).setUUID(UUID.randomUUID().toString());
+                try {
+                    intent.putExtra(Constants.MESSAGE_CONTENT_KEY, JSON.getMapper().writeValueAsBytes(operation));
+                    intent.putExtra(Constants.URL_KEY, targetURL);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
                 App.getInstance().startActivity(intent);
                 return null;
             }
@@ -39,7 +58,7 @@ public class SignDocumentAndSendAction implements DebugAction {
 
     @Override
     public String getLabel() {
-        return "App. embedded browser";
+        return "SIGN DOCUMENT AND SEND";
     }
 
 }
