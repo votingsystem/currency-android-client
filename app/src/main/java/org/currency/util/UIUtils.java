@@ -1,26 +1,18 @@
 package org.currency.util;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -70,7 +62,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import static org.currency.dto.OperationPassword.InputType.PATTER_LOCK;
 import static org.currency.util.LogUtils.LOGD;
 
 /**
@@ -457,7 +448,7 @@ public class UIUtils {
         }
     }
 
-    public static void launchPasswordInputActivity(Activity context) {
+    public static void launchPasswordInputActivity(Activity context, PasswordInputStep step) {
         OperationPassword operationPassword = PrefUtils.getOperationPassword();
         Intent intent = null;
         if (operationPassword != null) {
@@ -469,7 +460,7 @@ public class UIUtils {
                     intent = new Intent(context, PinInputActivity.class);
                     break;
             }
-            intent.putExtra(Constants.STEP_KEY, PasswordInputStep.PIN_REQUEST);
+            intent.putExtra(Constants.STEP_KEY, step);
             context.startActivityForResult(intent, Constants.RC_REQUEST_OPERATION_PASSW);
         }
     }

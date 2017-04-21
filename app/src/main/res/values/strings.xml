@@ -85,7 +85,7 @@
     <string name="error_lbl">error</string>
     <string name="msg_lbl">mensaje</string>
     <string name="operation_ok_msg">operación completada con éxito</string>
-    <string name="operation_cancelled_msg">operación ccancelada</string>
+    <string name="operation_cancelled_msg">operación cancelada</string>
     <string name="operation_error_msg">error en la operación</string>
     <string name="operation_unknown_error_msg">el servicio no está preparado para la operación \'%1$s\'</string>
     <string name="conn_timeout_msg">problemas conectando con el servicio</string>

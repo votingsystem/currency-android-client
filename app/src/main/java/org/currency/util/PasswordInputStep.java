@@ -5,6 +5,6 @@ package org.currency.util;
  */
 public enum PasswordInputStep {
 
-    PIN_REQUEST, PIN_WITH_VALIDATION_REQUEST, NEW_PIN_REQUEST, NEW_PIN_CONFIRM;
+    PIN_REQUEST, PIN_WITH_VALIDATION_REQUEST, NEW_PIN_REQUEST;
 
 }

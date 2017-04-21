@@ -13,16 +13,16 @@ import org.currency.App;
 import org.currency.android.R;
 import org.currency.cms.CMSSignedMessage;
 import org.currency.crypto.CertificationRequest;
-import org.currency.crypto.PEMUtils;
 import org.currency.dto.ResponseDto;
 import org.currency.fragment.ProgressDialogFragment;
 import org.currency.http.ContentType;
 import org.currency.http.HttpConn;
 import org.currency.util.Constants;
-import org.currency.util.OperationType;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.UIUtils;
 
 import java.io.IOException;
+
 import static org.currency.util.LogUtils.LOGD;
 
 /**
@@ -56,7 +56,7 @@ public class SignAndSendActivity extends AppCompatActivity {
         });
         contentToSign = getIntent().getExtras().getByteArray(Constants.MESSAGE_CONTENT_KEY);
         targetURL = getIntent().getExtras().getString(Constants.URL_KEY);
-        UIUtils.launchPasswordInputActivity(this);
+        UIUtils.launchPasswordInputActivity(this, PasswordInputStep.PIN_REQUEST);
     }
 
     @Override
@@ -89,15 +89,14 @@ public class SignAndSendActivity extends AppCompatActivity {
 
         @Override protected void onPreExecute() {
             ProgressDialogFragment.showDialog(getString(R.string.wait_msg),
-                    getString(R.string.sending_register_data_msg), getSupportFragmentManager());
+                    getString(R.string.sending_data_lbl), getSupportFragmentManager());
         }
 
         @Override protected ResponseDto doInBackground(String... urls) {
             try {
                 CMSSignedMessage cmsMessage = App.getInstance().signCMSMessage(contentToSign);
                 return HttpConn.getInstance().doPostRequest(
-                        cmsMessage.toPEM(), ContentType.PKCS7_SIGNED,
-                        "https://voting.ddns.net/currency-server/api/test-pkcs7/sign");
+                        cmsMessage.toPEM(), ContentType.PKCS7_SIGNED, targetURL);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return ResponseDto.ERROR(getString(R.string.error_lbl), ex.getMessage());

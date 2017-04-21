@@ -9,7 +9,6 @@ import android.os.Bundle;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.currency.App;
-import org.currency.activity.BrowserActivity;
 import org.currency.activity.SignAndSendActivity;
 import org.currency.debug.DebugAction;
 import org.currency.dto.OperationDto;
@@ -36,8 +35,8 @@ public class SignDocumentAndSendAction implements DebugAction {
         new AsyncTask<Context, Void, Void>() {
             @Override
             protected Void doInBackground(Context... contexts) {
-                String targetURL = "https://voting.ddns.net/currency-server/";
-                LOGD(TAG, "doInBackground - targetURL: " + targetURL);
+                String targetURL = "https://voting.ddns.net/currency-server/api/test-pkcs7/sign";
+                LOGD(TAG, "targetURL: " + targetURL);
                 Intent intent = new Intent(App.getInstance(), SignAndSendActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 MetadataDto currencyService = App.getInstance().getCurrencyService();

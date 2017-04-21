@@ -6,9 +6,9 @@ import android.os.AsyncTask;
 
 import org.currency.App;
 import org.currency.activity.PatternLockInputActivity;
-import org.currency.android.R;
 import org.currency.debug.DebugAction;
 import org.currency.util.Constants;
+import org.currency.util.PasswordInputStep;
 
 import static org.currency.util.LogUtils.LOGD;
 
@@ -23,9 +23,9 @@ public class PatternLockAction implements DebugAction {
             protected Void doInBackground(Context... contexts) {
                 LOGD(TAG, "doInBackground");
                 Intent intent = new Intent(App.getInstance(), PatternLockInputActivity.class);
-                intent.putExtra(Constants.MESSAGE_KEY, context.getString(R.string.request_pattern_lock_msg));
-                intent.putExtra(Constants.PASSWORD_CONFIRM_KEY, true);
-                intent.putExtra(Constants.MODE_KEY, PatternLockInputActivity.MODE_VALIDATE_INPUT);
+                intent.putExtra(Constants.MESSAGE_KEY, "Enter pattern lock");
+                intent.putExtra(Constants.STEP_KEY, PasswordInputStep.PIN_REQUEST);
+                intent.putExtra(Constants.OPERATION_CODE_KEY, "OP_CODE");
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 App.getInstance().startActivity(intent);
                 return null;

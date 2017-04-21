@@ -14,10 +14,10 @@
     <TextView
         android:id="@+id/msg"
         android:layout_width="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
-        android:layout_height="90dp"
+        android:layout_height="60dp"
         android:textColor="#ba0011"
         android:textSize="25dp"
         android:textStyle="bold"

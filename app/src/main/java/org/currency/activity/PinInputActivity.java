@@ -95,66 +95,68 @@ public class PinInputActivity extends AppCompatActivity {
         switch (inputStep) {
             case PIN_REQUEST:
                 getSupportActionBar().setTitle(R.string.pin_lbl);
-                if (passw == null) {
-                    return true;
-                }
-                if (!operationPassword.validateInput(passw, this)) {
-                    msgTextView.setText(getString(R.string.pin_error_lbl));
-                    pinText.setText("");
-                    return true;
-                }
+                if (passw != null) {
+                    if (!operationPassword.validateInput(passw, this)) {
+                        msgTextView.setText(getString(R.string.pin_error_lbl));
+                        pinText.setText("");
+                        return true;
+                    }
+                } else return true;
                 break;
             case PIN_WITH_VALIDATION_REQUEST:
                 getSupportActionBar().setTitle(R.string.pin_lbl);
-                if (firstPin == null) {
-                    firstPin = passw;
-                    msgTextView.setText(getString(R.string.repeat_password));
-                    pinText.setText("");
-                    return true;
-                } else {
-                    if (!firstPin.equals(passw)) {
-                        firstPin = null;
+                if (passw != null) {
+                    if (firstPin == null) {
+                        firstPin = passw;
+                        msgTextView.setText(getString(R.string.repeat_password));
                         pinText.setText("");
-                        msgTextView.setText(getString(R.string.password_mismatch));
+                        return true;
+                    } else {
+                        if (!firstPin.equals(passw)) {
+                            firstPin = null;
+                            pinText.setText("");
+                            msgTextView.setText(getString(R.string.password_mismatch));
+                            return true;
+                        }
+                    }
+                    if (!operationPassword.validateInput(passw, this)) {
+                        msgTextView.setText(getString(R.string.pin_error_lbl));
+                        pinText.setText("");
                         return true;
                     }
-                }
-                if (!operationPassword.validateInput(passw, this)) {
-                    msgTextView.setText(getString(R.string.pin_error_lbl));
-                    pinText.setText("");
-                    return true;
-                }
+                } else return true;
                 break;
             case NEW_PIN_REQUEST:
                 getSupportActionBar().setTitle(R.string.change_password_lbl);
                 msgTextView.setText(getString(R.string.enter_new_passw_to_app_msg));
                 if(passw != null) {
-                    firstPin = passw;
-                    inputStep = PasswordInputStep.NEW_PIN_CONFIRM;
-                    msgTextView.setText(getString(R.string.confirm_new_passw_msg));
-                    pinText.setText("");
-                    return true;
+                    if (firstPin == null) {
+                        firstPin = passw;
+                        msgTextView.setText(getString(R.string.confirm_new_passw_msg));
+                        pinText.setText("");
+                        return true;
+                    } else {
+                        if (!firstPin.equals(passw)) {
+                            firstPin = null;
+                            msgTextView.setText(getString(R.string.new_password_error_msg));
+                            pinText.setText("");
+                            return true;
+                        } else {
+                            PrefUtils.putOperationPassword(new OperationPassword(
+                                    OperationPassword.InputType.PIN, passw.toCharArray()));
+                            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                            finishOK(passw);
+                                        }
+                                    });
+                            UIUtils.showMessageDialog(getString(R.string.change_password_lbl), getString(
+                                    R.string.new_password_ok_msg), positiveButton, null, this);
+                            return false;
+                        }
+                    }
                 }
                 return true;
-            case NEW_PIN_CONFIRM:
-                if (!firstPin.equals(passw)) {
-                    inputStep = PasswordInputStep.NEW_PIN_REQUEST;
-                    msgTextView.setText(getString(R.string.new_password_error_msg));
-                    pinText.setText("");
-                    return true;
-                } else {
-                    PrefUtils.putOperationPassword(new OperationPassword(
-                            OperationPassword.InputType.PIN, passw.toCharArray()));
-                    DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    finishOK(passw);
-                                }
-                            });
-                    UIUtils.showMessageDialog(getString(R.string.change_password_lbl), getString(
-                            R.string.new_password_ok_msg), positiveButton, null, this);
-                    return false;
-                }
 
         }
         finishOK(passw);

@@ -12,6 +12,7 @@ import android.widget.RadioGroup;
 import org.currency.android.R;
 import org.currency.dto.OperationPassword;
 import org.currency.util.Constants;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 
@@ -51,7 +52,7 @@ public class PasswordTypeSelectorActivity extends AppCompatActivity {
                                 OperationPassword.InputType.PIN) {
                             Intent intent = new Intent(PasswordTypeSelectorActivity.this,
                                     PinInputActivity.class);
-                            intent.putExtra(Constants.STEP_KEY, getIntent().getExtras().getSerializable(Constants.STEP_KEY));
+                            intent.putExtra(Constants.STEP_KEY, PasswordInputStep.NEW_PIN_REQUEST);
                             startActivityForResult(intent, RC_PIN);
                         }
                         finish();
@@ -62,8 +63,7 @@ public class PasswordTypeSelectorActivity extends AppCompatActivity {
                                 OperationPassword.InputType.PATTER_LOCK) {
                             Intent intent = new Intent(PasswordTypeSelectorActivity.this,
                                     PatternLockInputActivity.class);
-                            intent.putExtra(Constants.MODE_KEY, PatternLockInputActivity.MODE_CHANGE_PASSWORD);
-                            intent.putExtra(Constants.PASSWORD_CONFIRM_KEY, true);
+                            intent.putExtra(Constants.STEP_KEY, PasswordInputStep.NEW_PIN_REQUEST);
                             startActivityForResult(intent, RC_PATERN_LOCK);
                         } else finish();
                         break;

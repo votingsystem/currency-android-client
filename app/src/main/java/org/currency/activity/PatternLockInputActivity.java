@@ -15,6 +15,7 @@ import org.currency.dto.ResponseDto;
 import org.currency.ui.DialogButton;
 import org.currency.ui.PatternLockView;
 import org.currency.util.Constants;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 
@@ -27,21 +28,12 @@ public class PatternLockInputActivity extends AppCompatActivity {
 
     private static final String TAG = PatternLockInputActivity.class.getSimpleName();
 
-    private enum InputStep {PATTERN_REQUEST, NEW_PATTERN_REQUEST, NEW_PATTERN_CONFIRM}
-
-    //we are here because we want to validate a signature request
-    public static final int MODE_VALIDATE_INPUT = 0;
-    //we are here because we want to set/change the password
-    public static final int MODE_CHANGE_PASSWORD = 1;
-    private int requestMode;
 
     private PatternLockView mCircleLockView;
     private TextView msgTextView;
-    private InputStep inputStep = InputStep.PATTERN_REQUEST;
-    private Boolean withPasswordConfirm;
-    private String newPin;
+    private PasswordInputStep inputStep;
     private String firstPin;
-    private OperationPassword passwAccessMode;
+    private OperationPassword operationPassword;
 
 
     @Override
@@ -52,13 +44,9 @@ public class PatternLockInputActivity extends AppCompatActivity {
         mCircleLockView = (PatternLockView) findViewById(R.id.lock_view_circle);
         msgTextView = (TextView) findViewById(R.id.msg);
         String operationCode = getIntent().getStringExtra(Constants.OPERATION_CODE_KEY);
-
-        if(PrefUtils.getDNIeCAN() == null) {
-            Intent intent = new Intent(this, UserDataFormActivity.class);
-            startActivity(intent);
-            finish();
+        if(savedInstanceState == null) {
+            inputStep = (PasswordInputStep) getIntent().getSerializableExtra(Constants.STEP_KEY);
         }
-
         if (operationCode != null) {
             TextView operationCodeText = (TextView) findViewById(R.id.operation_code);
             operationCodeText.setText(operationCode);
@@ -67,18 +55,8 @@ public class PatternLockInputActivity extends AppCompatActivity {
         if (getIntent().getStringExtra(Constants.MESSAGE_KEY) != null) {
             msgTextView.setText(Html.fromHtml(getIntent().getStringExtra(Constants.MESSAGE_KEY)));
         }
-        withPasswordConfirm = getIntent().getExtras().getBoolean(Constants.PASSWORD_CONFIRM_KEY, false);
-        passwAccessMode = PrefUtils.getOperationPassword();
-        requestMode = getIntent().getExtras().getInt(Constants.MODE_KEY, MODE_VALIDATE_INPUT);
-        switch (requestMode) {
-            case MODE_CHANGE_PASSWORD:
-                getSupportActionBar().setTitle(R.string.change_password_lbl);
-                processPassword(null);
-                break;
-            case MODE_VALIDATE_INPUT:
-                getSupportActionBar().setTitle(R.string.pattern_lock_lbl);
-                break;
-        }
+        operationPassword = PrefUtils.getOperationPassword();
+        processPassword(null);
         mCircleLockView.setCallBack(new PatternLockView.CallBack() {
             @Override
             public int onFinish(PatternLockView.Password password) {
@@ -96,40 +74,19 @@ public class PatternLockInputActivity extends AppCompatActivity {
     }
 
     private void processPassword(final String passw) {
-        switch (requestMode) {
-            case MODE_CHANGE_PASSWORD:
-                switch (inputStep) {
-                    case PATTERN_REQUEST:
-                        msgTextView.setText(getString(R.string.enter_new_passw_to_app_msg));
-                        inputStep = InputStep.NEW_PATTERN_REQUEST;
+        switch (inputStep) {
+            case PIN_REQUEST:
+                getSupportActionBar().setTitle(R.string.pattern_lock_lbl);
+                if (passw != null) {
+                    if (!operationPassword.validateInput(passw, this)) {
+                        msgTextView.setText(getString(R.string.pin_error_lbl));
                         return;
-                    case NEW_PATTERN_REQUEST:
-                        newPin = passw;
-                        inputStep = InputStep.NEW_PATTERN_CONFIRM;
-                        msgTextView.setText(getString(R.string.confirm_new_passw_msg));
-                        return;
-                    case NEW_PATTERN_CONFIRM:
-                        if (passw.equals(newPin)) {
-                            PrefUtils.putOperationPassword(new OperationPassword(
-                                    OperationPassword.InputType.PATTER_LOCK, newPin.toCharArray()));
-                            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int whichButton) {
-                                            finishOK(newPin);
-                                        }
-                                    });
-                            UIUtils.showMessageDialog(getString(R.string.change_password_lbl), getString(
-                                    R.string.new_password_ok_msg), positiveButton, null, this);
-                            return;
-                        } else {
-                            inputStep = InputStep.NEW_PATTERN_REQUEST;
-                            msgTextView.setText(getString(R.string.new_password_error_msg));
-                            return;
-                        }
-                }
+                    }
+                } else return;
                 break;
-            case MODE_VALIDATE_INPUT:
-                if (withPasswordConfirm) {
+            case PIN_WITH_VALIDATION_REQUEST:
+                getSupportActionBar().setTitle(R.string.pattern_lock_lbl);
+                if (passw != null) {
                     if (firstPin == null) {
                         firstPin = passw;
                         msgTextView.setText(getString(R.string.repeat_password));
@@ -141,9 +98,40 @@ public class PatternLockInputActivity extends AppCompatActivity {
                             return;
                         }
                     }
-                }
-                if (!passwAccessMode.validateInput(passw, this)) return;
+                    if (!operationPassword.validateInput(passw, this)) {
+                        msgTextView.setText(getString(R.string.pin_error_lbl));
+                        return;
+                    }
+                } else return;
                 break;
+            case NEW_PIN_REQUEST:
+                getSupportActionBar().setTitle(R.string.change_password_lbl);
+                if(passw != null) {
+                    if (firstPin == null) {
+                        firstPin = passw;
+                        msgTextView.setText(getString(R.string.confirm_new_passw_msg));
+                        return;
+                    } else {
+                        if (!firstPin.equals(passw)) {
+                            firstPin = null;
+                            msgTextView.setText(getString(R.string.new_password_error_msg));
+                            return;
+                        } else {
+                            PrefUtils.putOperationPassword(new OperationPassword(
+                                    OperationPassword.InputType.PATTER_LOCK, passw.toCharArray()));
+                            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                            finishOK(passw);
+                                        }
+                                    });
+                            UIUtils.showMessageDialog(getString(R.string.change_password_lbl), getString(
+                                    R.string.new_password_ok_msg), positiveButton, null, this);
+                            return;
+                        }
+                    }
+                }
+                return;
         }
         finishOK(passw);
     }

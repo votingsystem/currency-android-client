@@ -80,7 +80,6 @@ public class Constants {
     public static final String MESSAGE_KEY                   = "MESSAGE_KEY";
     public static final String MESSAGE_CONTENT_KEY           = "MESSAGE_CONTENT_KEY";
     public static final String CONTENT_TYPE_KEY              = "CONTENT_TYPE_KEY";
-    public static final String PASSWORD_CONFIRM_KEY          = "PASSWORD_CONFIRM_KEY";
     public static final String OPERATION_TYPE                = "OPERATION_TYPE";
     public static final String MODE_KEY                      = "MODE_KEY";
     public static final String MESSAGE_SUBJECT_KEY           = "MESSAGE_SUBJECT_KEY";
