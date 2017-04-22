@@ -31,7 +31,6 @@ import org.currency.dto.metadata.MetadataDto;
 import org.currency.http.ContentType;
 import org.currency.http.HttpConn;
 import org.currency.model.Currency;
-import org.currency.model.CurrencyBundle;
 import org.currency.model.Operation;
 import org.currency.throwable.ValidationException;
 import org.currency.util.Constants;
@@ -41,7 +40,7 @@ import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
 import org.currency.util.PrefUtils;
 import org.currency.util.Utils;
-import org.currency.util.Wallet;
+import org.currency.wallet.Wallet;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -192,9 +191,6 @@ public class PaymentService extends IntentService {
                         CurrencyDto currencyDto = new CurrencyDto(
                                 PEMUtils.fromPEMToPKCS10CertificationRequest(
                                 currencyRequest.getSignedContentStr().getBytes()));
-                        if(!transactionDto.getTagName().equals(currencyDto.getTag()))
-                            throw new ValidationException("Transaction tag: " + transactionDto.getTagName() +
-                            " doesn't match currency request tag: " + currencyDto.getTag());
                         if(!transactionDto.getCurrencyCode().equals(currencyDto.getCurrencyCode()))
                                 throw new ValidationException("Transaction CurrencyCode: " +
                                 transactionDto.getCurrencyCode() + " doesn't match currency CurrencyCode " +
@@ -312,15 +308,13 @@ public class PaymentService extends IntentService {
         LOGD(TAG + ".sendCurrencyBatch", "sendCurrencyBatch");
         ResponseDto response = null;
         try {
-            CurrencyBundle currencyBundle = Wallet.getCurrencyBundleForTag(
-                    transactionDto.getCurrencyCode(), transactionDto.getTagName());
             CurrencyBatchDto requestDto = null;
             if(OperationType.CURRENCY_CHANGE == transactionDto.getOperation()) {
                 transactionDto.setToUserIBAN(null);
-                requestDto = currencyBundle.getCurrencyBatchDto(transactionDto);
+                requestDto = Wallet.getCurrencyBatch(transactionDto);
                 CMSSignedMessage cmsMessage = transactionDto.getCMSMessage();
                 requestDto.setCurrencyChangeCSR(cmsMessage.getSignedContentStr());
-            } else requestDto = currencyBundle.getCurrencyBatchDto(transactionDto);
+            } else requestDto = Wallet.getCurrencyBatch(transactionDto);
             Operation operation = new Operation(transactionDto.getOperation(), requestDto,
                     Operation.State.PENDING);
             Uri operationUri = getContentResolver().insert(OperationContentProvider.CONTENT_URI,

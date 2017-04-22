@@ -28,7 +28,6 @@ import org.currency.activity.CurrencyRequesActivity;
 import org.currency.android.R;
 import org.currency.dto.ResponseDto;
 import org.currency.dto.currency.BalancesDto;
-import org.currency.dto.currency.TagInfoDto;
 import org.currency.service.PaymentService;
 import org.currency.util.Constants;
 import org.currency.util.DateUtils;
@@ -229,13 +228,12 @@ public class CurrencyAccountsFragment extends Fragment {
                 View accountView = holder.accountView;
                 final String currencyCode = currencyCodes.get(position);
                 GridView tag_container = (GridView) accountView.findViewById(R.id.tag_container);
-                Map<String, TagInfoDto> tagVSBalancesMap = userBalances.getTagMap(currencyCode);
-                if(tagVSBalancesMap != null) {
-                    TagInfoAdapter tagInfoAdapter = new TagInfoAdapter(context,
-                            new ArrayList<>(tagVSBalancesMap.values()));
+                Map<String, BigDecimal> balancesCash = userBalances.getBalancesCash();
+                if(balancesCash != null) {
+                    TagInfoAdapter tagInfoAdapter = new TagInfoAdapter(context, balancesCash);
                     tag_container.setAdapter(tagInfoAdapter);
                 } else showMessage(getString(R.string.cash_no_available_msg));
-                final BigDecimal currencyBalance = BalancesDto.getTagMapTotal(tagVSBalancesMap);
+                final BigDecimal currencyBalance = balancesCash.get(currencyCode);
                 TextView currency_text = (TextView) accountView.findViewById(R.id.currency_text);
                 currency_text.setText(currencyBalance + " " + currencyCode);
                 Button request_button = (Button)accountView.findViewById(R.id.cash_button);
@@ -258,30 +256,28 @@ public class CurrencyAccountsFragment extends Fragment {
     }
 
 
-    public class TagInfoAdapter extends ArrayAdapter<TagInfoDto> {
+    public class TagInfoAdapter extends ArrayAdapter {
 
         private final Context context;
-        private List<TagInfoDto> tagList;
+        private Map<String, BigDecimal> balancesCash;
+        private List<String> currencyList;
 
-        public TagInfoAdapter(Context context, List<TagInfoDto> tagList) {
-            super(context, R.layout.currency_tag_card, tagList);
+        public TagInfoAdapter(Context context, Map<String, BigDecimal> balancesCash) {
+            super(context, R.layout.currency_item_card, new ArrayList<>(balancesCash.keySet()));
             this.context = context;
-            this.tagList = tagList;
+            this.balancesCash = balancesCash;
+            currencyList = new ArrayList<>(balancesCash.keySet());
         }
 
         @Override public View getView(int position, View itemView, ViewGroup parent) {
-            TagInfoDto selectedTag = tagList.get(position);
+            String currencyCode = currencyList.get(position);
             LayoutInflater inflater =
                     (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View cardView = inflater.inflate(R.layout.currency_tag_card, null);
+            View cardView = inflater.inflate(R.layout.currency_item_card, null);
             TextView total_amount = (TextView)cardView.findViewById(R.id.total_amount);
-            total_amount.setText(selectedTag.getTotal().setScale(2, BigDecimal.ROUND_DOWN).toString());
-            TextView timelimited_amount = (TextView)cardView.findViewById(R.id.timelimited_amount);
-            timelimited_amount.setText(selectedTag.getTimeLimited().setScale(2, BigDecimal.ROUND_DOWN).toString());
-            TextView tag_msg = (TextView)cardView.findViewById(R.id.tag_msg);
-            tag_msg.setText(selectedTag.getName());
+            total_amount.setText(balancesCash.get(currencyCode).setScale(2, BigDecimal.ROUND_DOWN).toString());
             TextView currency_symbol = (TextView)cardView.findViewById(R.id.currency_symbol);
-            currency_symbol.setText(StringUtils.getCurrencySymbol(selectedTag.getCurrencyCode()));
+            currency_symbol.setText(StringUtils.getCurrencySymbol(currencyCode));
             return cardView;
         }
 

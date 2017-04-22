@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -153,21 +152,26 @@ public class Utils {
         return arguments;
     }
 
-    public static void launchPasswordInputActivity(Integer requestCode, String msg,
-                       Integer activityMode, AppCompatActivity activity) {
-        Intent intent = null;
+    public static void launchPasswordInputActivity(String message, String operationCode,
+                               PasswordInputStep step, Integer requestCode, Activity context) {
         OperationPassword operationPassword = PrefUtils.getOperationPassword();
-        switch (operationPassword.getInputType()) {
-            case PATTER_LOCK:
-                intent = new Intent(activity, PatternLockInputActivity.class);
-                break;
-            case PIN:
-                intent = new Intent(activity, PinInputActivity.class);
-                break;
+        Intent intent = null;
+        if (operationPassword != null) {
+            switch (operationPassword.getInputType()) {
+                case PATTER_LOCK:
+                    intent = new Intent(context, PatternLockInputActivity.class);
+                    break;
+                case PIN:
+                    intent = new Intent(context, PinInputActivity.class);
+                    break;
+            }
+            if(message != null)
+                intent.putExtra(Constants.MESSAGE_KEY, message);
+            if(operationCode != null)
+                intent.putExtra(Constants.OPERATION_CODE_KEY, operationCode);
+            intent.putExtra(Constants.STEP_KEY, step);
+            context.startActivityForResult(intent, requestCode);
         }
-        intent.putExtra(Constants.MESSAGE_KEY, msg);
-        intent.putExtra(Constants.MODE_KEY, activityMode);
-        activity.startActivityForResult(intent, requestCode);
     }
 
     //http://stackoverflow.com/questions/1995439/get-android-phone-model-programmatically

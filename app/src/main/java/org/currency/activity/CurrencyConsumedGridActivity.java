@@ -32,7 +32,6 @@ import org.currency.model.Currency;
 import org.currency.util.Constants;
 import org.currency.util.DateUtils;
 import org.currency.util.JSON;
-import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
 import org.currency.util.UIUtils;
 
@@ -165,8 +164,6 @@ public class CurrencyConsumedGridActivity extends AppCompatActivity implements a
                     time_limited_msg.setText(getString(R.string.lapse_lbl,
                             DateUtils.getDayWeekDateStr(currency.getDateTo(), "HH:mm")));
                 }
-                ((TextView) view.findViewById(R.id.tag_data)).setText(MsgUtils.getTagMessage(
-                        currency.getTag()));
             }
         }
     }

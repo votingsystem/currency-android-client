@@ -19,7 +19,7 @@ import org.currency.http.ContentType;
 import org.currency.http.HttpConn;
 import org.currency.util.Constants;
 import org.currency.util.PasswordInputStep;
-import org.currency.util.UIUtils;
+import org.currency.util.Utils;
 
 import java.io.IOException;
 
@@ -56,8 +56,11 @@ public class SignAndSendActivity extends AppCompatActivity {
         });
         contentToSign = getIntent().getExtras().getByteArray(Constants.MESSAGE_CONTENT_KEY);
         targetURL = getIntent().getExtras().getString(Constants.URL_KEY);
-        UIUtils.launchPasswordInputActivity(this, PasswordInputStep.PIN_REQUEST);
+        Utils.launchPasswordInputActivity(null, null,
+                PasswordInputStep.PIN_REQUEST, Constants.RC_REQUEST_OPERATION_PASSW, this);
     }
+
+    //    public static void launchPasswordInputActivity(String message, String operationCode, PasswordInputStep step, Integer requestCode, Activity context)
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -6,7 +6,6 @@ import org.currency.cms.CMSSignedMessage;
 import org.currency.crypto.CertUtils;
 import org.currency.crypto.PEMUtils;
 import org.currency.dto.OperationTypeDto;
-import org.currency.dto.TagDto;
 import org.currency.dto.UserDto;
 import org.currency.dto.currency.CurrencyCertExtensionDto;
 import org.currency.throwable.ValidationException;
@@ -36,15 +35,9 @@ public class CurrencyBatch {
 
     private UserDto toUser;
     private BigDecimal batchAmount = null;
-    private BigDecimal wildTagAmount;
     private BigDecimal currencyAmount = null;
-    private String tagVS;
-    private Boolean isTimeLimited = Boolean.FALSE;
     private String batchUUID;
     private String subject;
-
-    private List<Currency> tagCurrencyList;
-    private List<Currency> wildTagCurrencyList;
 
     private List<Currency> currencyList;
     private Currency leftOverCurrency;
@@ -59,13 +52,11 @@ public class CurrencyBatch {
     public CurrencyBatch() {}
 
     public CurrencyBatch(BigDecimal batchAmount, BigDecimal currencyAmount, String currencyCode,
-            String tag, Boolean isTimeLimited, OperationTypeDto currencyServer) throws Exception {
+            OperationTypeDto currencyServer) throws Exception {
         this.batchAmount = batchAmount;
+        this.currencyAmount = currencyAmount;
         this.setCurrencyServerDto(currencyServer);
         this.setCurrencyCode(currencyCode);
-        this.currencyAmount = currencyAmount;
-        this.isTimeLimited = isTimeLimited;
-        this.tagVS = (tag == null)? TagDto.WILDTAG:tag;
     }
 
     public CurrencyBatch(List<Currency> currencyList) {
@@ -103,10 +94,8 @@ public class CurrencyBatch {
     }
 
     public static CurrencyBatch getAnonymousSignedTransactionBatch(BigDecimal totalAmount,
-            String currencyCode, String tagVS, Boolean isTimeLimited,
-            OperationTypeDto currencyServer) throws Exception {
-        CurrencyBatch result = new CurrencyBatch(totalAmount, null, currencyCode, tagVS,
-                isTimeLimited, currencyServer);
+            String currencyCode, OperationTypeDto currencyServer) throws Exception {
+        CurrencyBatch result = new CurrencyBatch(totalAmount, null, currencyCode, currencyServer);
         return result;
     }
 
@@ -132,14 +121,6 @@ public class CurrencyBatch {
 
     public void setCurrencyCode(String currencyCode) {
         this.currencyCode = currencyCode;
-    }
-
-    public String getTagVS() {
-        return tagVS;
-    }
-
-    public void setTagVS(String tagVS) {
-        this.tagVS = tagVS;
     }
 
     public Currency initCurrency(String signedCsr) throws Exception {
@@ -189,28 +170,12 @@ public class CurrencyBatch {
         this.batchAmount = batchAmount;
     }
 
-    public BigDecimal getWildTagAmount() {
-        return wildTagAmount;
-    }
-
-    public void setWildTagAmount(BigDecimal wildTagAmount) {
-        this.wildTagAmount = wildTagAmount;
-    }
-
     public BigDecimal getCurrencyAmount() {
         return currencyAmount;
     }
 
     public void setCurrencyAmount(BigDecimal currencyAmount) {
         this.currencyAmount = currencyAmount;
-    }
-
-    public Boolean isTimeLimited() {
-        return isTimeLimited;
-    }
-
-    public void setIsTimeLimited(Boolean isTimeLimited) {
-        this.isTimeLimited = isTimeLimited;
     }
 
     public String getBatchUUID() {
@@ -229,28 +194,12 @@ public class CurrencyBatch {
         this.subject = subject;
     }
 
-    public List<Currency> getTagCurrencyList() {
-        return tagCurrencyList;
-    }
-
-    public void setTagCurrencyList(List<Currency> tagCurrencyList) {
-        this.tagCurrencyList = tagCurrencyList;
-    }
-
     public OperationType getOperation() {
         return operation;
     }
 
     public void setOperation(OperationType operation) {
         this.operation = operation;
-    }
-
-    public List<Currency> getWildTagCurrencyList() {
-        return wildTagCurrencyList;
-    }
-
-    public void setWildTagCurrencyList(List<Currency> wildTagCurrencyList) {
-        this.wildTagCurrencyList = wildTagCurrencyList;
     }
 
     public Currency getLeftOverCurrency() {

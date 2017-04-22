@@ -1,24 +1,31 @@
-package org.currency.util;
+package org.currency.wallet;
 
 import org.currency.App;
 import org.currency.android.R;
+import org.currency.cms.CMSSignedMessage;
 import org.currency.contentprovider.CurrencyContentProvider;
-import org.currency.dto.TagDto;
 import org.currency.dto.currency.CurrencyBatchDto;
 import org.currency.dto.currency.CurrencyStateDto;
-import org.currency.dto.currency.IncomesDto;
+import org.currency.dto.currency.TransactionDto;
+import org.currency.dto.metadata.MetadataDto;
 import org.currency.model.Currency;
-import org.currency.model.CurrencyBundle;
 import org.currency.throwable.ValidationException;
+import org.currency.util.JSON;
+import org.currency.util.OperationType;
+import org.currency.util.PrefUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.currency.util.LogUtils.LOGD;
 
@@ -117,28 +124,14 @@ public class Wallet {
         Wallet.saveWallet(currencyMap.values(), null);
     }
 
-    public static Map<String, Map<String, IncomesDto>> getCurrencyTagMap() {
-        Map<String, Map<String, IncomesDto>> result = new HashMap<>();
+    public static Map<String, BigDecimal> getCurrencyCodeMap() {
+        Map<String, BigDecimal> result = new HashMap<>();
         for(Currency currency : currencySet) {
             if(result.containsKey(currency.getCurrencyCode())) {
-                Map<String, IncomesDto> tagMap = result.get(currency.getCurrencyCode());
-                if(tagMap.containsKey(currency.getTag())) {
-                    IncomesDto incomesDto = tagMap.get(currency.getTag());
-                    incomesDto.addTotal(currency.getAmount());
-                    if(currency.isTimeLimited()) incomesDto.addTimeLimited(currency.getAmount());
-                } else {
-                    IncomesDto incomesDto = new IncomesDto();
-                    incomesDto.addTotal(currency.getAmount());
-                    if(currency.isTimeLimited()) incomesDto.addTimeLimited(currency.getAmount());
-                    tagMap.put(currency.getTag(), incomesDto);
-                }
+                BigDecimal total = result.get(currency.getCurrencyCode()).add(currency.getAmount());
+                result.put(currency.getCurrencyCode(), total);
             } else {
-                Map<String, IncomesDto> tagMap = new HashMap<>();
-                IncomesDto incomesDto = new IncomesDto();
-                incomesDto.addTotal(currency.getAmount());
-                if(currency.isTimeLimited()) incomesDto.addTimeLimited(currency.getAmount());
-                tagMap.put(currency.getTag(), incomesDto);
-                result.put(currency.getCurrencyCode(), tagMap);
+                result.put(currency.getCurrencyCode(), currency.getAmount());
             }
         }
         return result;
@@ -163,32 +156,93 @@ public class Wallet {
         Wallet.saveWallet(currencyMap.values(), null);
     }
 
-    public static BigDecimal getAvailableForTag(String currencyCode, String tag) {
-        Map<String, Map<String, IncomesDto>> balancesCashMap = getCurrencyTagMap();
+    public static BigDecimal getAvailableForCurrencyCode(String currencyCode) {
+        Map<String, BigDecimal> balancesCashMap = getCurrencyCodeMap();
         BigDecimal cash = BigDecimal.ZERO;
         if(balancesCashMap.containsKey(currencyCode)) {
-            Map<String, IncomesDto> currencyMap = balancesCashMap.get(currencyCode);
-            if(currencyMap.containsKey(TagDto.WILDTAG)) cash = cash.add(
-                    currencyMap.get(TagDto.WILDTAG).getTotal());
-            if(!TagDto.WILDTAG.equals(tag)) {
-                if(currencyMap.containsKey(tag)) cash =
-                        cash.add(currencyMap.get(tag).getTotal());
-            }
+            return balancesCashMap.get(currencyCode);
         }
         return cash;
     }
 
-    public static CurrencyBundle getCurrencyBundleForTag(String currencyCode, String tag)
+    public static List<Currency> getCurrencyListByCurrencyCode(String currencyCode)
             throws ValidationException {
-        CurrencyBundle currencyBundle = new CurrencyBundle(currencyCode, tag);
+        List<Currency> result = new ArrayList<>();
         for(Currency currency : currencySet) {
             if(currency.getCurrencyCode().equals(currencyCode)) {
-                if(tag.equals(currency.getTag()) || TagDto.WILDTAG.equals(currency.getTag())) {
-                    currencyBundle.addCurrency(currency);
-                }
+                result.add(currency);
             }
         }
-        return currencyBundle;
+        return result;
+    }
+
+    public static CurrencyBatchDto getCurrencyBatch(TransactionDto transactionDto) throws Exception {
+        String toUserIBAN = transactionDto.getToUserIBAN() == null ? null:
+                transactionDto.getToUserIBAN().iterator().next();
+        return getCurrencyBatch(transactionDto.getOperation(),
+                transactionDto.getSubject(), toUserIBAN, transactionDto.getAmount(),
+                transactionDto.getCurrencyCode(), transactionDto.getUUID());
+    }
+
+    public static CurrencyBatchDto getCurrencyBatch(OperationType operation, String subject,
+            String toUserIBAN, BigDecimal batchAmount, String currencyCode, String uuid)
+            throws Exception {
+        CurrencyBatchDto dto = new CurrencyBatchDto();
+        dto.setOperation(operation);
+        dto.setSubject(subject);
+        dto.setToUserIBAN(toUserIBAN);
+        dto.setBatchAmount(batchAmount);
+        dto.setCurrencyCode(currencyCode);
+        if(uuid == null)
+            dto.setBatchUUID(UUID.randomUUID().toString());
+        else
+            dto.setBatchUUID(uuid);
+        Set<String> currencySetSignatures = new HashSet<>();
+        Set<Currency> currencySet = new HashSet<>();
+
+        List<Currency> currencyList = getCurrencyListByCurrencyCode(currencyCode);
+        Collections.sort(currencyList, currencyComparator);
+        BigDecimal availableAmount = getTotalAmount(currencyList);
+
+        BigDecimal bundleAccumulated = BigDecimal.ZERO;
+        Currency lastCurrencyAdded = null;
+        if(batchAmount.compareTo(availableAmount) < 0) {
+            while(bundleAccumulated.compareTo(batchAmount) < 0) {
+                lastCurrencyAdded = currencyList.remove(0);
+                currencySet.add(lastCurrencyAdded);
+                bundleAccumulated = bundleAccumulated.add(lastCurrencyAdded.getAmount());
+            }
+        } else throw new ValidationException(App.getInstance().getString(R.string.currencyAmountErrorMsg,
+                 currencyCode, batchAmount, availableAmount));
+        if(bundleAccumulated.compareTo(batchAmount) > 0) {
+            BigDecimal leftOverAmount = bundleAccumulated.subtract(batchAmount);
+            dto.setLeftOverCurrency(new Currency(leftOverAmount, lastCurrencyAdded.getCurrencyCode(),
+                    App.getInstance().getCurrencyService().getEntity().getId()));
+        }
+        for(Currency currency : currencySet) {
+            MetadataDto metadataDto = App.getInstance().getCurrencyService();
+            CMSSignedMessage cmsMessage = currency.getCertificationRequest().signData(
+                    JSON.writeValueAsBytes(dto),
+                    OperationType.TIMESTAMP_REQUEST.getUrl(metadataDto.getFirstTimeStampEntityId()));
+            currency.setCMS(cmsMessage);
+            currencySetSignatures.add(currency.getCMS().toPEMStr());
+        }
+        dto.setCurrencySet(currencySetSignatures);
+        dto.setCurrencyCollection(currencySet);
+        return dto;
+    }
+
+
+    public static BigDecimal getTotalAmount(Collection<Currency> currencyCollection) {
+        BigDecimal result = BigDecimal.ZERO;
+        for(Currency currency : currencyCollection) {
+            result = result.add(currency.getAmount());
+        }
+        return result;
+    }
+
+    public BigDecimal getTotalAmountByCorrencyCode(String currencyCode) throws ValidationException {
+        return getTotalAmount(getCurrencyListByCurrencyCode(currencyCode));
     }
 
     /**

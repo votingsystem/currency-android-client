@@ -14,12 +14,9 @@ import org.currency.cms.CMSSignedMessage;
 import org.currency.dto.MessageDto;
 import org.currency.dto.OperationDto;
 import org.currency.dto.QRMessageDto;
-import org.currency.dto.TagDto;
 import org.currency.dto.UserDto;
 import org.currency.throwable.ValidationException;
-import org.currency.util.DateUtils;
 import org.currency.util.JSON;
-import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
 import org.currency.util.PaymentStep;
 
@@ -63,9 +60,7 @@ public class TransactionDto implements Serializable {
     private String cmsCancelationMessagePEM;
     private String UUID;
     private BigDecimal amount;
-    private Boolean timeLimited = Boolean.FALSE;
     private Integer numReceptors;
-    private Set<String> tags;
     private Set<String> toUserIBAN = new HashSet<>();
     private Long numChildTransactions;
 
@@ -74,7 +69,6 @@ public class TransactionDto implements Serializable {
     private TransactionDetailsDto details;
     private UserDto.Type userToType;
 
-    @JsonIgnore private TagDto tag;
     @JsonIgnore private CMSSignedMessage cmsMessage;
     @JsonIgnore private CMSSignedMessage cancelationCmsMessage;
     @JsonIgnore private List<UserDto> toUserList;
@@ -87,7 +81,7 @@ public class TransactionDto implements Serializable {
     public TransactionDto() {}
 
     public static TransactionDto PAYMENT_REQUEST(String toUser, UserDto.Type userToType,
-             BigDecimal amount, String currencyCode, String toUserIBAN, String subject, String tag){
+             BigDecimal amount, String currencyCode, String toUserIBAN, String subject){
         TransactionDto dto = new TransactionDto();
         dto.setOperation(OperationType.TRANSACTION_INFO);
         dto.setUserToType(userToType);
@@ -96,20 +90,16 @@ public class TransactionDto implements Serializable {
         dto.setCurrencyCode(currencyCode);
         dto.setSubject(subject);
         dto.setToUserIBAN(new HashSet<>(Arrays.asList(toUserIBAN)));
-        dto.setTags(new HashSet<>(Arrays.asList(tag)));
         dto.setDateCreated(new Date());
         dto.setUUID(java.util.UUID.randomUUID().toString());
         return dto;
     }
 
-    public static TransactionDto CURRENCY_REQUEST(BigDecimal amount, String currencyCode,
-              TagDto tagVS, boolean timeLimited) {
+    public static TransactionDto CURRENCY_REQUEST(BigDecimal amount, String currencyCode) {
         TransactionDto dto = new TransactionDto();
         dto.setOperation(OperationType.CURRENCY_REQUEST);
         dto.setAmount(amount);
         dto.setCurrencyCode(currencyCode);
-        dto.setTag(tagVS);
-        dto.setTimeLimited(timeLimited);
         return dto;
     }
 
@@ -122,10 +112,6 @@ public class TransactionDto implements Serializable {
             throw new ValidationException("missing param 'currencyCode'");
         if(subject == null)
             throw new ValidationException("missing param 'subject'");
-        if(timeLimited) validTo = DateUtils.getCurrentWeekPeriod().getDateTo();
-        if (tags.size() != 1) { //for now transactions can only have one tag associated
-            throw new ValidationException("invalid number of tags:" + tags.size());
-        }
     }
 
     public Long getId() {
@@ -207,12 +193,6 @@ public class TransactionDto implements Serializable {
         this.cmsCancelationMessagePEM = cmsCancelationMessagePEM;
     }
 
-    @JsonIgnore public String getTagName() {
-        if(tag != null) return tag.getName();
-        else if (tags != null && !tags.isEmpty()) return tags.iterator().next();
-        return null;
-    }
-
     public UserDto getFromUser() {
         return fromUser;
     }
@@ -267,14 +247,6 @@ public class TransactionDto implements Serializable {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
     }
 
     public Long getNumChildTransactions() {
@@ -348,16 +320,6 @@ public class TransactionDto implements Serializable {
     public void setToUserList(List<UserDto> toUserList) {
         this.toUserList = toUserList;
         this.numReceptors = toUserList.size();
-    }
-
-    public TagDto getTag() {
-        if(tag != null) return tag;
-        else if(tags != null && !tags.isEmpty()) tag = new TagDto(tags.iterator().next());
-        return tag;
-    }
-
-    public void setTag(TagDto tag) {
-        this.tag = tag;
     }
 
     public Set<String> getToUserIBAN() {
@@ -519,11 +481,7 @@ public class TransactionDto implements Serializable {
         String action = isIncome? App.getInstance().getString(R.string.income_lbl):
                 App.getInstance().getString(R.string.expense_lbl);
         String result = App.getInstance().getString(R.string.currency_change_receipt_ok_msg,
-                action, receiptDto.getBatchAmount() + " " + receiptDto.getCurrencyCode(),
-                MsgUtils.getTagMessage(receiptDto.getTag()));
-        if(receiptDto.timeLimited()) {
-            result = result + " - " + App.getInstance().getString(R.string.time_remaining_lbl);
-        }
+                action, receiptDto.getBatchAmount() + " " + receiptDto.getCurrencyCode());
         return result;
     }
 
@@ -547,11 +505,7 @@ public class TransactionDto implements Serializable {
         String action = isIncome? App.getInstance().getString(R.string.income_lbl):
                 App.getInstance().getString(R.string.expense_lbl);
         String result = App.getInstance().getString(R.string.currency_send_receipt_ok_msg,
-                action, receiptDto.getBatchAmount() + " " + receiptDto.getCurrencyCode(),
-                MsgUtils.getTagMessage(receiptDto.getTag()));
-        if(receiptDto.timeLimited()) {
-            result = result + " - " + App.getInstance().getString(R.string.time_remaining_lbl);
-        }
+                action, receiptDto.getBatchAmount() + " " + receiptDto.getCurrencyCode());
         return result;
     }
 
@@ -581,11 +535,7 @@ public class TransactionDto implements Serializable {
         String action = isIncome? App.getInstance().getString(R.string.income_lbl):
                 App.getInstance().getString(R.string.expense_lbl);
         String result = App.getInstance().getString(R.string.from_user_receipt_ok_msg,
-                action, receiptDto.getAmount() + " " + receiptDto.getCurrencyCode(),
-                MsgUtils.getTagMessage(receiptDto.getTagName()));
-        if(receiptDto.isTimeLimited()) {
-            result = result + " - " + App.getInstance().getString(R.string.time_remaining_lbl);
-        }
+                action, receiptDto.getAmount() + " " + receiptDto.getCurrencyCode());
         return result;
     }
 
@@ -595,14 +545,6 @@ public class TransactionDto implements Serializable {
 
     public void setDetails(TransactionDetailsDto details) {
         this.details = details;
-    }
-
-    public Boolean isTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
     }
 
     public int getIconId(Context context) {
@@ -643,10 +585,6 @@ public class TransactionDto implements Serializable {
     public static TransactionDto fromUri(Uri uriData) {
         TransactionDto transaction = new TransactionDto();
         transaction.setAmount(new BigDecimal(uriData.getQueryParameter("amount")));
-        TagDto tag = null;
-        if(uriData.getQueryParameter("tag") != null) tag = new TagDto(uriData.getQueryParameter("tag"));
-        else tag = new TagDto(TagDto.WILDTAG);
-        transaction.setTag(tag);
         transaction.setCurrencyCode(uriData.getQueryParameter("currencyCode"));
         transaction.setSubject(uriData.getQueryParameter("subject"));
         UserDto toUser = new UserDto();
@@ -658,9 +596,6 @@ public class TransactionDto implements Serializable {
 
     public static TransactionDto fromOperation(OperationDto operation) throws Exception {
         TransactionDto transactionDto = operation.getSignedContent(TransactionDto.class);
-        if(transactionDto.getTag() == null) {
-            transactionDto.setTag(new TagDto(TagDto.WILDTAG));
-        }
         UserDto toUser = new UserDto();
         toUser.setGivenName(transactionDto.getFromUserName());
         if(operation.getOperation().getType() == OperationType.TRANSACTION_FROM_USER) {
@@ -685,8 +620,6 @@ public class TransactionDto implements Serializable {
         dto.setCurrencyCode(currencyCode);
         dto.setToUserName(toUserName);
         dto.setToUserIBAN(toUserIBAN);
-        dto.setTimeLimited(timeLimited);
-        dto.setTags(tags);
         dto.setUUID(UUID);
         return dto;
     }

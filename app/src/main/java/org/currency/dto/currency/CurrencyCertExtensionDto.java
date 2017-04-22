@@ -13,20 +13,16 @@ public class CurrencyCertExtensionDto implements Serializable {
     private String currencyServerURL;
     private String revocationHash;
     private String currencyCode;
-    private String tag;
-    private Boolean timeLimited;
     private BigDecimal amount;
 
     public CurrencyCertExtensionDto() {}
 
     public CurrencyCertExtensionDto(BigDecimal amount, String currencyCode, String revocationHash,
-                String currencyServerURL, Boolean timeLimited, String tag) {
+                String currencyServerURL) {
         this.amount = amount;
         this.currencyCode = currencyCode;
         this.revocationHash = revocationHash;
         this.currencyServerURL = currencyServerURL;
-        this.tag = tag;
-        this.timeLimited = timeLimited;
     }
 
     public String getCurrencyServerURL() {
@@ -53,28 +49,12 @@ public class CurrencyCertExtensionDto implements Serializable {
         this.currencyCode = currencyCode;
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public Boolean getTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
     }
 
 }

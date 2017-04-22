@@ -7,7 +7,6 @@ import org.bouncycastle2.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle2.jce.PKCS10CertificationRequest;
 import org.currency.crypto.CertUtils;
 import org.currency.crypto.CertificationRequest;
-import org.currency.dto.TagDto;
 import org.currency.model.Currency;
 import org.currency.throwable.ValidationException;
 import org.currency.util.Constants;
@@ -16,7 +15,6 @@ import org.currency.util.OperationType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -41,8 +39,6 @@ public class CurrencyDto implements Serializable {
     private String subject;
     private String toUserIBAN;
     private String toUserName;
-    private String tag;
-    private Boolean timeLimited;
     private String batchUUID;
     private String object;
     private Date notBefore;
@@ -58,8 +54,6 @@ public class CurrencyDto implements Serializable {
         this.revocationHash = currency.getRevocationHash();
         this.amount = currency.getAmount();
         this.currencyCode = currency.getCurrencyCode();
-        this.tag = currency.getTag();
-        this.timeLimited = currency.isTimeLimited();
         this.dateCreated = currency.getDateCreated();
         this.notBefore = currency.getValidFrom();
         this.notAfter = currency.getValidTo();
@@ -76,7 +70,6 @@ public class CurrencyDto implements Serializable {
         revocationHash = certExtensionDto.getRevocationHash();
         amount = certExtensionDto.getAmount();
         currencyCode = certExtensionDto.getCurrencyCode();
-        tag = certExtensionDto.getTag();
         CurrencyDto certSubjectDto = getCertSubjectDto(subjectDN, revocationHash);
         if(!certSubjectDto.getCurrencyServerURL().equals(currencyServerURL))
             throw new ValidationException("currencyServerURL: " + currencyServerURL + " - certSubject: " + subjectDN);
@@ -84,12 +77,6 @@ public class CurrencyDto implements Serializable {
             throw new ValidationException("amount: " + amount + " - certSubject: " + subjectDN);
         if(!certSubjectDto.getCurrencyCode().equals(currencyCode))
             throw new ValidationException("currencyCode: " + currencyCode + " - certSubject: " + subjectDN);
-        if(!certSubjectDto.getTag().equals(tag)) throw new ValidationException("tag: " + tag + " - certSubject: " + subjectDN);
-    }
-
-    public CurrencyDto(Boolean timeLimited, String object) {
-        this.timeLimited = timeLimited;
-        this.object = object;
     }
 
     public static CurrencyDto BATCH_ITEM(CurrencyBatchDto currencyBatchDto, Currency currency) throws ValidationException {
@@ -97,12 +84,6 @@ public class CurrencyDto implements Serializable {
                 throw new ValidationException("CurrencyBatch currencyCode: " +
                 currencyBatchDto.getCurrencyCode() + " - Currency currencyCode: " +
                 currency.getCurrencyCode());
-        if(currency.isTimeLimited() && !currencyBatchDto.getTimeLimited()) throw new ValidationException(
-                "TimeLimited currency cannot go inside NOT TimeLimited CurrencyBatch");
-        if(!TagDto.WILDTAG.equals(currency.getTag()) && !currency.getTag().equals(
-                currencyBatchDto.getTag())) throw new ValidationException(MessageFormat.format(
-                "''{0}'' Currency  cannot go inside ''{1}'' CurrencyBatch", currency.getTag(),
-                currencyBatchDto.getTag()));
         CurrencyDto currencyDto = new CurrencyDto(currency);
         currencyDto.subject = currencyBatchDto.getSubject();
         currencyDto.toUserIBAN = currencyBatchDto.getToUserIBAN();
@@ -117,9 +98,7 @@ public class CurrencyDto implements Serializable {
         currencyDto.setAmount(currency.getAmount());
         currencyDto.setCurrencyCode(currency.getCurrencyCode());
         currencyDto.setRevocationHash(currency.getRevocationHash());
-        currencyDto.setTag(currency.getTag());
         currencyDto.setState(currency.getState());
-        currencyDto.setTimeLimited(currency.isTimeLimited());
         //CertificationRequest instead of Currency to make it easier deserialization on JavaFX
         currencyDto.setObject(ObjectUtils.serializeObjectToString(currency.getCertificationRequest()));
         return currencyDto;
@@ -173,14 +152,6 @@ public class CurrencyDto implements Serializable {
         return currencySet;
     }
 
-    public Boolean isTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
-    }
-
     public String getObject() {
         return object;
     }
@@ -203,14 +174,6 @@ public class CurrencyDto implements Serializable {
 
     public void setCurrencyCode(String currencyCode) {
         this.currencyCode = currencyCode;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     public BigDecimal getAmount() {
@@ -293,10 +256,6 @@ public class CurrencyDto implements Serializable {
         this.toUserName = toUserName;
     }
 
-    public Boolean getTimeLimited() {
-        return timeLimited;
-    }
-
     public String getBatchUUID() {
         return batchUUID;
     }
@@ -327,7 +286,6 @@ public class CurrencyDto implements Serializable {
             currencyDto.setCurrencyCode(subjectDN.split("CURRENCY_CODE:")[1].split(",")[0]);
         if (subjectDN.contains("CURRENCY_VALUE:"))
             currencyDto.setAmount(new BigDecimal(subjectDN.split("CURRENCY_VALUE:")[1].split(",")[0]));
-        if (subjectDN.contains("TAG:")) currencyDto.setTag(subjectDN.split("TAG:")[1].split(",")[0]);
         if (subjectDN.contains("currencyServerURL:"))
             currencyDto.setCurrencyServerURL(subjectDN.split("currencyServerURL:")[1].split(",")[0]);
         currencyDto.setRevocationHash(revocationHash);

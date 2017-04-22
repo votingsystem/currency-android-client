@@ -36,9 +36,7 @@ public class CurrencyBatchDto implements Serializable {
     private String toUserName;
     private String subject;
     private String currencyCode;
-    private String tag;
     private String batchUUID;
-    private Boolean timeLimited = Boolean.FALSE;
     private BigDecimal batchAmount;
     private BigDecimal leftOver = BigDecimal.ZERO;
     @JsonIgnore private Currency leftOverCurrency;
@@ -53,8 +51,6 @@ public class CurrencyBatchDto implements Serializable {
         this.toUserIBAN = currencyBatch.getToUser().getIBAN();
         this.batchAmount = currencyBatch.getBatchAmount();
         this.currencyCode = currencyBatch.getCurrencyCode();
-        this.tag = currencyBatch.getTag();
-        this.timeLimited = currencyBatch.isTimeLimited();
         this.batchUUID  = currencyBatch.getBatchUUID();
     }
 
@@ -71,8 +67,6 @@ public class CurrencyBatchDto implements Serializable {
                 currencyData + "expected batchAmount " + getBatchAmount().toString() + " found " + currency.getBatchAmount().toString());
         if(!getCurrencyCode().equals(currency.getCurrencyCode())) throw new ValidationException(
                 currencyData + "expected currencyCode " + getCurrencyCode() + " found " + currency.getCurrencyCode());
-        if(!getTag().equals(currency.getTag())) throw new ValidationException(
-                currencyData + "expected tag " + getTag() + " found " + currency.getTag());
         if(!getBatchUUID().equals(currency.getBatchUUID())) throw new ValidationException(
                 currencyData + "expected batchUUID " + getBatchUUID() + " found " + currency.getBatchUUID());
     }
@@ -93,10 +87,6 @@ public class CurrencyBatchDto implements Serializable {
                 "ERROR - batchAmount ''{0}'' - receipt amount ''{1}''", batchAmount, signedDto.getBatchAmount()));
         if(!signedDto.getCurrencyCode().equals(signedDto.getCurrencyCode())) throw new ValidationException(MessageFormat.format(
                 "ERROR - batch currencyCode ''{0}'' - receipt currencyCode ''{1}''",  currencyCode, signedDto.getCurrencyCode()));
-        if(timeLimited.booleanValue() != signedDto.timeLimited().booleanValue()) throw new ValidationException(MessageFormat.format(
-                "ERROR - batch timeLimited ''{0}'' - receipt timeLimited ''{1}''",  timeLimited, signedDto.timeLimited()));
-        if(!tag.equals(signedDto.getTag())) throw new ValidationException(MessageFormat.format(
-                "ERROR - batch tag ''{0}'' - receipt tag ''{1}''",  tag, signedDto.getTag()));
         if(!currencySet.equals(signedDto.getCurrencySet())) throw new ValidationException("ERROR - currencySet mismatch");
         return receipt;
     }
@@ -143,28 +133,12 @@ public class CurrencyBatchDto implements Serializable {
         this.currencyCode = currencyCode;
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
     public String getBatchUUID() {
         return batchUUID;
     }
 
     public void setBatchUUID(String batchUUID) {
         this.batchUUID = batchUUID;
-    }
-
-    public Boolean timeLimited() {
-        return timeLimited;
-    }
-
-    public void setIsTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
     }
 
     public BigDecimal getBatchAmount() {
@@ -205,14 +179,6 @@ public class CurrencyBatchDto implements Serializable {
 
     public void setLeftOverCSR(String leftOverCSR) {
         this.leftOverCSR = leftOverCSR;
-    }
-
-    public Boolean getTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
     }
 
     public Collection<Currency> getCurrencyCollection() {

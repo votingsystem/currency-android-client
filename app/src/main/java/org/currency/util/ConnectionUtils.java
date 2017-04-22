@@ -36,8 +36,8 @@ public class ConnectionUtils {
     public static void initConnection(final AppCompatActivity activity) {
         OperationPassword passwordAccessMode = PrefUtils.getOperationPassword();
         if(passwordAccessMode != null) {
-            Utils.launchPasswordInputActivity(RC_PASSWORD_REQUEST,
-                    activity.getString(R.string.connection_passw_msg), null, activity);
+            Utils.launchPasswordInputActivity(activity.getString(R.string.connection_passw_msg),
+                    null, PasswordInputStep.PIN_REQUEST, RC_PASSWORD_REQUEST, activity);
         } else {
             launchNFC_IDCard(activity, null);
         }

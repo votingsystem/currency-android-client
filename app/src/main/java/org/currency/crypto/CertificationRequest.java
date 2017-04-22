@@ -14,7 +14,6 @@ import org.currency.cms.CMSSignedMessage;
 import org.currency.cms.CMSUtils;
 import org.currency.dto.CertExtensionDto;
 import org.currency.dto.DeviceDto;
-import org.currency.dto.TagDto;
 import org.currency.dto.currency.CurrencyCertExtensionDto;
 import org.currency.http.MediaType;
 import org.currency.util.Constants;
@@ -73,16 +72,15 @@ public class CertificationRequest implements java.io.Serializable {
 
     public static CertificationRequest getCurrencyRequest(
             String signatureMechanism, String provider, String currencyServerURL, String revocationHash,
-            BigDecimal amount, String currencyCode, Boolean timeLimited, String tag)
+            BigDecimal amount, String currencyCode)
             throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
             SignatureException, IOException {
         KeyPair keyPair = KeyGenerator.INSTANCE.genKeyPair();
-        tag = (tag == null)? TagDto.WILDTAG : tag.trim();
         X500Principal subject = new X500Principal("CN=currencyServerURL:" + currencyServerURL +
                 ", OU=CURRENCY_VALUE:" + amount + ", OU=CURRENCY_CODE:" + currencyCode +
-                ", OU=TAG:" + tag + ", OU=DigitalCurrency");
+                ", OU=DigitalCurrency");
         CurrencyCertExtensionDto dto = new CurrencyCertExtensionDto(amount, currencyCode, revocationHash,
-                currencyServerURL, timeLimited, tag);
+                currencyServerURL);
         ASN1EncodableVector asn1EncodableVector = new ASN1EncodableVector();
         asn1EncodableVector.add(new Attribute(new ASN1ObjectIdentifier(Constants.CURRENCY_OID),
                 new DERSet(new DERUTF8String(JSON.writeValueAsString(dto)))));

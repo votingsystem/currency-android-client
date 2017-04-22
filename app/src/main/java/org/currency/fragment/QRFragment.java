@@ -86,8 +86,7 @@ public class  QRFragment extends Fragment {
         App.getInstance().putQRMessage(qrDto);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.qr_code_lbl));
         ((AppCompatActivity)getActivity()).getSupportActionBar().setSubtitle(
-                getString(R.string.qr_transaction_request_msg, dto.getAmount() + " " + dto.getCurrencyCode(),
-                MsgUtils.getTagMessage(dto.getTagName())));
+                getString(R.string.qr_transaction_request_msg, dto.getAmount() + " " + dto.getCurrencyCode()));
         if(!App.getInstance().isSocketConnectionEnabled()) {
             AlertDialog.Builder builder = UIUtils.getMessageDialogBuilder(
                     getString(R.string.qr_code_lbl), getString(R.string.qr_connection_required_msg),

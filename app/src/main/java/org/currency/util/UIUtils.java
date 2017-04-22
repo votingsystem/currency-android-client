@@ -43,10 +43,7 @@ import org.currency.App;
 import org.currency.activity.ActivityBase;
 import org.currency.activity.FragmentContainerActivity;
 import org.currency.activity.MessageActivity;
-import org.currency.activity.PatternLockInputActivity;
-import org.currency.activity.PinInputActivity;
 import org.currency.android.R;
-import org.currency.dto.OperationPassword;
 import org.currency.dto.ResponseDto;
 import org.currency.dto.UserDto;
 import org.currency.fragment.MessageDialogFragment;
@@ -445,23 +442,6 @@ public class UIUtils {
                         }
                     });
             UIUtils.showMessageDialog(builder);
-        }
-    }
-
-    public static void launchPasswordInputActivity(Activity context, PasswordInputStep step) {
-        OperationPassword operationPassword = PrefUtils.getOperationPassword();
-        Intent intent = null;
-        if (operationPassword != null) {
-            switch (operationPassword.getInputType()) {
-                case PATTER_LOCK:
-                    intent = new Intent(context, PatternLockInputActivity.class);
-                    break;
-                case PIN:
-                    intent = new Intent(context, PinInputActivity.class);
-                    break;
-            }
-            intent.putExtra(Constants.STEP_KEY, step);
-            context.startActivityForResult(intent, Constants.RC_REQUEST_OPERATION_PASSW);
         }
     }
 

@@ -1,13 +1,9 @@
 package org.currency.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,8 +19,6 @@ import android.widget.TextView;
 import org.currency.App;
 import org.currency.activity.FragmentContainerActivity;
 import org.currency.android.R;
-import org.currency.dto.ResponseDto;
-import org.currency.dto.TagDto;
 import org.currency.dto.UserDto;
 import org.currency.dto.currency.TransactionDto;
 import org.currency.util.Constants;
@@ -50,22 +44,11 @@ public class TransactionFormFragment extends Fragment {
 
     private Spinner currencySpinner;
     private EditText amount_text;
-    private TextView tag_text, subject;
-    private TagDto tag;
+    private TextView subject;
     private UserDto toUser;
-    private Button add_tag_btn;
     private String broadCastId = TransactionFormFragment.class.getSimpleName();
     private CheckBox from_user_checkbox, currency_send_checkbox, currency_change_checkbox;
     private Type formType;
-
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override public void onReceive(Context context, Intent intent) {
-            LOGD(TAG + ".broadcastReceiver", "extras: " + intent.getExtras());
-            final ResponseDto responseDto = intent.getParcelableExtra(Constants.RESPONSE_KEY);
-            TagDto tag = (TagDto) intent.getSerializableExtra(Constants.TAG_KEY);
-            if(tag != null) setTag(tag);
-        }
-    };
 
     @Override public View onCreateView(LayoutInflater inflater,
                ViewGroup container, Bundle savedInstanceState) {
@@ -102,15 +85,6 @@ public class TransactionFormFragment extends Fragment {
         });
         Button request_button = (Button) rootView.findViewById(R.id.request_button);
         currencySpinner = (Spinner) rootView.findViewById(R.id.currency_spinner);
-        add_tag_btn = (Button)rootView.findViewById(R.id.add_tag_btn);
-        add_tag_btn.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if(tag == null) SelectTagDialogFragment.showDialog(broadCastId,
-                        getFragmentManager(), SelectTagDialogFragment.TAG);
-                else setTag(null);
-            }
-        });
-        tag_text = (TextView)rootView.findViewById(R.id.tag_text);
         switch (formType) {
             case QR_FORM:
                 ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.qr_create_lbl));
@@ -125,9 +99,6 @@ public class TransactionFormFragment extends Fragment {
                 request_button.setText(getString(R.string.send_money_lbl));
                 break;
         }
-
-        if(savedInstanceState != null)
-            setTag((TagDto) savedInstanceState.getSerializable(Constants.TAG_KEY));
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         return rootView;
     }
@@ -143,17 +114,6 @@ public class TransactionFormFragment extends Fragment {
         }
     }
 
-    private void setTag(TagDto tag) {
-        this.tag = tag;
-        if(tag != null) {
-            add_tag_btn.setText(getString(R.string.change_lbl));
-            tag_text.setText(getString(R.string.selected_tag_lbl,tag.getName()));
-            tag_text.setVisibility(View.VISIBLE);
-        } else {
-            add_tag_btn.setText(getString(R.string.add_tag_lbl));
-            tag_text.setVisibility(View.GONE);
-        }
-    }
 
     private void generateQR() {
         LOGD(TAG + ".generateQR", "generateQR");
@@ -183,14 +143,12 @@ public class TransactionFormFragment extends Fragment {
                     getString(R.string.min_payment_option_msg), getFragmentManager());
             return;
         }
-        if(tag == null)
-            tag = new TagDto(TagDto.WILDTAG);
+
         switch (formType) {
             case TRANSACTION_FORM:
                 TransactionDto transactionDto = new TransactionDto();
                 transactionDto.setAmount(new BigDecimal(amount_text.getText().toString()));
                 transactionDto.setCurrencyCode(currencySpinner.getSelectedItem().toString());
-                transactionDto.setTag(tag);
                 transactionDto.setPaymentOptions(paymentOptions);
                 transactionDto.setSubject(subject.getText().toString());
                 transactionDto.setToUserName(toUser.getFullName());
@@ -208,8 +166,7 @@ public class TransactionFormFragment extends Fragment {
                         App.getInstance().getSessionInfo().getUser().getFullName(), UserDto.Type.USER,
                         new BigDecimal(amount_text.getText().toString()),
                         currencySpinner.getSelectedItem().toString(),
-                        App.getInstance().getSessionInfo().getUser().getIBAN(), subject.getText().toString(),
-                        tag.getName());
+                        App.getInstance().getSessionInfo().getUser().getIBAN(), subject.getText().toString());
                 dto.setPaymentOptions(paymentOptions);
                 Intent intent = new Intent(getActivity(), FragmentContainerActivity.class);
                 intent.putExtra(Constants.TRANSACTION_KEY, dto);
@@ -217,22 +174,6 @@ public class TransactionFormFragment extends Fragment {
                 startActivity(intent);
                 break;
         }
-    }
-
-    @Override public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable(Constants.TAG_KEY, tag);
-    }
-
-    @Override public void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
-                broadcastReceiver, new IntentFilter(broadCastId));
-    }
-
-    @Override public void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
     }
 
 }

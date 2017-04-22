@@ -2,8 +2,6 @@ package org.currency.dto.currency;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.currency.dto.TagDto;
-
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -18,7 +16,6 @@ public class CurrencyAccountDto {
     private String IBAN;
     private BigDecimal amount;
     private Date lastUpdated;
-    private TagDto tag;
 
     public CurrencyAccountDto() {}
 
@@ -60,14 +57,6 @@ public class CurrencyAccountDto {
 
     public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
-    }
-
-    public TagDto getTag() {
-        return tag;
-    }
-
-    public void setTag(TagDto tag) {
-        this.tag = tag;
     }
 
 }

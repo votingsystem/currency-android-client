@@ -33,10 +33,11 @@ import org.currency.service.PaymentService;
 import org.currency.util.Constants;
 import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.PrefUtils;
 import org.currency.util.UIUtils;
 import org.currency.util.Utils;
-import org.currency.util.Wallet;
+import org.currency.wallet.Wallet;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -58,7 +59,6 @@ public class PaymentFragment extends Fragment {
     private TextView receptor;
     private TextView subject;
     private TextView amount;
-    private TextView tag;
     private TransactionDto transactionDto;
     private Spinner payment_method_spinner;
 
@@ -103,7 +103,6 @@ public class PaymentFragment extends Fragment {
         receptor = (TextView)rootView.findViewById(R.id.receptor);
         subject = (TextView)rootView.findViewById(R.id.subject);
         amount= (TextView)rootView.findViewById(R.id.amount);
-        tag = (TextView)rootView.findViewById(R.id.tagvs);
         payment_method_spinner = (Spinner)rootView.findViewById(R.id.payment_method_spinner);
         try {
             transactionDto = (TransactionDto) getArguments().getSerializable(Constants.TRANSACTION_KEY);
@@ -115,11 +114,6 @@ public class PaymentFragment extends Fragment {
             receptor.setText(transactionDto.getToUserName());
             subject.setText(transactionDto.getSubject());
             amount.setText(transactionDto.getAmount().toString() + " " + transactionDto.getCurrencyCode());
-            String tagvsInfo = getString(R.string.selected_tag_lbl,
-                    MsgUtils.getTagMessage(transactionDto.getTagName()));
-            if(transactionDto.isTimeLimited()) tagvsInfo = tagvsInfo + " " +
-                    getString(R.string.time_remaining_tagvs_info_lbl);
-            tag.setText(tagvsInfo);
             if(transactionDto.getOperation() != null) {
                 switch(transactionDto.getOperation()) {
                     case DELIVERY_WITH_PAYMENT:
@@ -165,8 +159,8 @@ public class PaymentFragment extends Fragment {
             transactionDto.setOperation(TransactionDto.getByDescription(
                     (String) payment_method_spinner.getSelectedItem()));
             BalancesDto userInfo = PrefUtils.getBalances();
-            final BigDecimal availableForTagVS = userInfo.getAvailableForTag(
-                    transactionDto.getCurrencyCode(), transactionDto.getTag().getName());
+            final BigDecimal availableForTagVS = userInfo.getCurrencyCodeAvailable(
+                    transactionDto.getCurrencyCode());
             switch (transactionDto.getOperation()) {
                 case TRANSACTION_FROM_USER:
                     try {
@@ -191,33 +185,34 @@ public class PaymentFragment extends Fragment {
                             UIUtils.showMessageDialog(builder);
                             return;
                         } else {
-                            Utils.launchPasswordInputActivity(RC_SEND_TRANSACTION,
-                                    MsgUtils.getTransactionConfirmMessage(transactionDto, getActivity()),
-                                    null, (AppCompatActivity)getActivity());
+                            Utils.launchPasswordInputActivity(
+                                    MsgUtils.getTransactionConfirmMessage(transactionDto, getActivity()), null,
+                                    PasswordInputStep.PIN_REQUEST,
+                                    RC_SEND_TRANSACTION, (AppCompatActivity)getActivity());
                         }
                     } catch(Exception ex) { ex.printStackTrace();}
                     break;
                 case CURRENCY_CHANGE:
                 case CURRENCY_SEND:
                     if(Wallet.getCurrencySet() == null) {
-                        Utils.launchPasswordInputActivity(RC_OPEN_WALLET,
-                                getString(R.string.enter_wallet_password_msg),
-                                null, (AppCompatActivity)getActivity());
+                        Utils.launchPasswordInputActivity(getString(R.string.enter_wallet_password_msg),
+                                null, PasswordInputStep.PIN_REQUEST,
+                                RC_OPEN_WALLET, (AppCompatActivity)getActivity());
                         return;
                     }
-                    final BigDecimal availableForTagVSWallet = Wallet.getAvailableForTag(
-                            transactionDto.getCurrencyCode(), transactionDto.getTag().getName());
-                    if(availableForTagVSWallet.compareTo(transactionDto.getAmount()) < 0) {
+                    final BigDecimal availableForCurrencyCode = Wallet.getAvailableForCurrencyCode(
+                            transactionDto.getCurrencyCode());
+                    if(availableForCurrencyCode.compareTo(transactionDto.getAmount()) < 0) {
                         final BigDecimal amountToRequest = transactionDto.getAmount().subtract(
-                                availableForTagVSWallet);
-                        if(availableForTagVSWallet.compareTo(amountToRequest) < 0) {
+                                availableForCurrencyCode);
+                        if(availableForCurrencyCode.compareTo(amountToRequest) < 0) {
                             AlertDialog.Builder builder = UIUtils.getMessageDialogBuilder(
                                     getString(R.string.insufficient_cash_caption),
                                     getString(R.string.insufficient_anonymous_money_msg,
                                             transactionDto.getCurrencyCode(),
-                                            availableForTagVSWallet.toString(),
+                                            availableForCurrencyCode.toString(),
                                             amountToRequest.toString(),
-                                            availableForTagVSWallet.toString()), getActivity());
+                                            availableForCurrencyCode.toString()), getActivity());
                             builder.setPositiveButton(getString(R.string.check_available_lbl),
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {
@@ -237,7 +232,7 @@ public class PaymentFragment extends Fragment {
                                     getString(R.string.insufficient_anonymous_cash_msg,
                                             transactionDto.getCurrencyCode(),
                                             transactionDto.getAmount().toString(),
-                                            availableForTagVSWallet.toString()), getActivity());
+                                            availableForCurrencyCode.toString()), getActivity());
                             builder.setPositiveButton(getString(R.string.request_cash_lbl),
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {

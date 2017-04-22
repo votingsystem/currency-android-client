@@ -29,11 +29,11 @@ import org.currency.throwable.ValidationException;
 import org.currency.util.Constants;
 import org.currency.util.DateUtils;
 import org.currency.util.JSON;
-import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.UIUtils;
 import org.currency.util.Utils;
-import org.currency.util.Wallet;
+import org.currency.wallet.Wallet;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -219,16 +219,16 @@ public class MessageFragment extends Fragment {
     private void updateWallet() {
         LOGD(TAG + ".updateWallet", "updateWallet");
         if(Wallet.getCurrencySet() == null) {
-            Utils.launchPasswordInputActivity(RC_OPEN_WALLET, getString(R.string.enter_wallet_password_msg),
-                    null, (AppCompatActivity)getActivity());
+            Utils.launchPasswordInputActivity(getString(R.string.enter_wallet_password_msg),
+                    null, PasswordInputStep.PIN_REQUEST, RC_OPEN_WALLET,
+                    (AppCompatActivity)getActivity());
         } else {
             try {
                 MessageDto socketMessageDto = null;
                 try {
                     Wallet.updateWallet(new HashSet(Arrays.asList(currency)));
                     String msg = getString(R.string.save_to_wallet_ok_msg, currency.getAmount().toString() + " " +
-                            currency.getCurrencyCode()) + " " + getString(R.string.for_lbl)  + " " +
-                            MsgUtils.getTagMessage(currency.getTag());
+                            currency.getCurrencyCode());
                     AlertDialog.Builder builder = UIUtils.getMessageDialogBuilder(
                             getString(R.string.save_to_wallet_lbl), msg, getActivity());
                     builder.setPositiveButton(getString(R.string.accept_lbl),

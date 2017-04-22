@@ -223,48 +223,10 @@ public class ActivityBase extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-
         while(app.getAppState().process(this));
-
-
-        /*if (app.isRootedPhone()) {
-            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            finish();
-                        }
-                    });
-            UIUtils.showMessageDialog(getString(R.string.msg_lbl), getString(
-                    R.string.non_rooted_phones_required_msg), positiveButton, null, this);
-            return;
-        }
-        if(PrefUtils.getOperationPassword() == null) {
-            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            startActivity(new Intent(ActivityBase.this,
-                                    PasswordTypeSelectorActivity.class));
-                        }
-                    });
-            UIUtils.showMessageDialog(getString(R.string.msg_lbl), getString(
-                    R.string.access_mode_passw_required_msg), positiveButton, null, this);
-            return;
-        }*/
-
         if(App.getInstance().getCurrencyService() == null) {
             new EntityLoader().execute();
-        } /*else if(PrefUtils.getOperationPassword() == null) {
-            DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            startActivity(new Intent(ActivityBase.this,
-                                    PasswordTypeSelectorActivity.class));
-                        }
-                    });
-            UIUtils.showMessageDialog(getString(R.string.msg_lbl), getString(
-                    R.string.access_mode_passw_required_msg), positiveButton, null, this);
-            return;
-        }*/
+        }
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
                 broadcastReceiver, new IntentFilter(BROADCAST_ID));
     }
@@ -302,7 +264,7 @@ public class ActivityBase extends AppCompatActivity
             if(result != null) {
                 App.getInstance().setCurrencyService(result);
             } else {
-                DialogButton positiveButton = new DialogButton(getString(R.string.ok_lbl),
+                DialogButton positiveButton = new DialogButton(getString(R.string.try_again_lbl),
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 new EntityLoader().execute();

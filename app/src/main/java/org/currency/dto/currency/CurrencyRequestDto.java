@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.currency.crypto.CertUtils;
 import org.currency.crypto.PEMUtils;
-import org.currency.dto.TagDto;
 import org.currency.model.Currency;
 import org.currency.throwable.ValidationException;
 import org.currency.util.Constants;
@@ -34,10 +33,8 @@ public class CurrencyRequestDto {
     private String subject;
     private String serverURL;
     private String currencyCode;
-    private TagDto tag;
     private String UUID;
     private BigDecimal totalAmount;
-    private Boolean timeLimited;
 
     @JsonIgnore private Map<String, CurrencyDto> currencyDtoMap;
     @JsonIgnore private Map<String, Currency> currencyMap;
@@ -52,8 +49,6 @@ public class CurrencyRequestDto {
         currencyRequestDto.subject = transactionDto.getSubject();
         currencyRequestDto.totalAmount = transactionDto.getAmount();
         currencyRequestDto.currencyCode = transactionDto.getCurrencyCode();
-        currencyRequestDto.timeLimited = transactionDto.isTimeLimited();
-        currencyRequestDto.tag = transactionDto.getTag();
         currencyRequestDto.UUID = java.util.UUID.randomUUID().toString();
 
         Map<String, Currency> currencyMap = new HashMap<>();
@@ -64,8 +59,7 @@ public class CurrencyRequestDto {
                 "request with remainder - requestAmount ''{0}''  currencyValue ''{{1}}'' remainder ''{{2}}''",
                 transactionDto.getAmount(), currencyValue, divideAndRemainder[1]));
         for(int i = 0; i < divideAndRemainder[0].intValue(); i++) {
-            Currency currency = new Currency(serverURL, currencyValue, transactionDto.getCurrencyCode(),
-                    transactionDto.isTimeLimited(), currencyRequestDto.tag.getName());
+            Currency currency = new Currency(currencyValue, transactionDto.getCurrencyCode(), serverURL);
             requestCSRSet.add(new String(currency.getCertificationRequest().getCsrPEM()));
             currencyMap.put(currency.getRevocationHash(), currency);
         }
@@ -146,14 +140,6 @@ public class CurrencyRequestDto {
         this.totalAmount = totalAmount;
     }
 
-    public Boolean getTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
-    }
-
     public Set<String> getRequestCSRSet() {
         return requestCSRSet;
     }
@@ -176,14 +162,6 @@ public class CurrencyRequestDto {
 
     public Map<String, Currency> getCurrencyMap() {
         return currencyMap;
-    }
-
-    public TagDto getTag() {
-        return tag;
-    }
-
-    public void setTag(TagDto tag) {
-        this.tag = tag;
     }
 
 }

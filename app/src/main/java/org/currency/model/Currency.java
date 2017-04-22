@@ -7,7 +7,6 @@ import org.currency.cms.CMSSignedMessage;
 import org.currency.crypto.CertUtils;
 import org.currency.crypto.CertificationRequest;
 import org.currency.crypto.PEMUtils;
-import org.currency.dto.TagDto;
 import org.currency.dto.currency.CurrencyCertExtensionDto;
 import org.currency.dto.currency.CurrencyDto;
 import org.currency.throwable.ValidationException;
@@ -58,9 +57,7 @@ public class Currency extends ReceiptWrapper {
     private State state;
     private String currencyCode;
     private String url;
-    private String tag;
     private String currencyServerURL;
-    private Boolean timeLimited = Boolean.FALSE;
     private Date validFrom;
     private Date validTo;
     private Date dateCreated;
@@ -74,34 +71,29 @@ public class Currency extends ReceiptWrapper {
     public Currency() {}
 
     public Currency(String currencyServerURL, BigDecimal amount, String currencyCode,
-                    Boolean timeLimited, String revocationHash, String tag) {
+                    String revocationHash) {
         this.amount = amount;
         this.currencyServerURL = currencyServerURL;
         this.currencyCode = currencyCode;
-        this.tag = tag;
-        this.timeLimited = timeLimited;
         try {
             this.revocationHash = revocationHash;
             certificationRequest = CertificationRequest.getCurrencyRequest(
                     Constants.SIGNATURE_ALGORITHM, Constants.PROVIDER,
-                    currencyServerURL, revocationHash, amount, this.currencyCode, timeLimited, tag);
+                    currencyServerURL, revocationHash, amount, this.currencyCode);
         } catch(Exception ex) {  ex.printStackTrace(); }
     }
 
-    public Currency(String currencyServerURL, BigDecimal amount, String currencyCode,
-                    Boolean timeLimited, String tag) {
+    public Currency(BigDecimal amount, String currencyCode, String currencyServerURL) {
         this.amount = amount;
         this.currencyServerURL = currencyServerURL;
         this.currencyCode = currencyCode;
-        this.tag = tag;
-        this.timeLimited = timeLimited;
         try {
             this.originRevocationHash = UUID.randomUUID().toString();
             this.revocationHash = HashUtils.getHashBase64(originRevocationHash.getBytes(),
                     Constants.DATA_DIGEST_ALGORITHM);
             certificationRequest = CertificationRequest.getCurrencyRequest(
                     Constants.SIGNATURE_ALGORITHM, Constants.PROVIDER,
-                    currencyServerURL, revocationHash, amount, this.currencyCode, timeLimited, tag);
+                    currencyServerURL, revocationHash, amount, this.currencyCode);
         } catch(Exception ex) {  ex.printStackTrace(); }
     }
 
@@ -196,10 +188,6 @@ public class Currency extends ReceiptWrapper {
                 throw new ValidationException(getErrorPrefix() +
                 "expected currencyCode '" + currencyCode + "' - found: '" + batchItemDto.getCurrencyCode());
         }
-        tag = batchItemDto.getTag();
-        if(!TagDto.WILDTAG.equals(certExtensionDto.getTag()) && !certExtensionDto.getTag().equals(tag))
-                throw new ValidationException("expected tag '" + certExtensionDto.getTag() +
-                "' - found: '" + batchItemDto.getTag());
 
         Date signatureTime = cmsMessage.getTimeStampToken(cmsMessage.getCurrencyCert())
                 .getTimeStampInfo().getGenTime();
@@ -209,7 +197,6 @@ public class Currency extends ReceiptWrapper {
         this.subject = batchItemDto.getSubject();
         this.toUserIBAN = batchItemDto.getToUserIBAN();
         this.toUserName = batchItemDto.getToUserName();
-        this.timeLimited = batchItemDto.isTimeLimited();
     }
 
     public CMSSignedMessage getCMS() {
@@ -254,14 +241,6 @@ public class Currency extends ReceiptWrapper {
         this.url = url;
     }
 
-    public Boolean isTimeLimited() {
-        return timeLimited;
-    }
-
-    public void setTimeLimited(Boolean timeLimited) {
-        this.timeLimited = timeLimited;
-    }
-
     public void setCertificationRequest(CertificationRequest certificationRequest) {
         this.certificationRequest = certificationRequest;
     }
@@ -284,11 +263,6 @@ public class Currency extends ReceiptWrapper {
         }
     }
 
-    public static boolean checkIfTimeLimited(Date notBefore, Date notAfter) {
-        long diff = notAfter.getTime() - notBefore.getTime();
-        return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS) <= 7;//one week
-    }
-
     public String getToUserIBAN() {
         return toUserIBAN;
     }
@@ -303,15 +277,6 @@ public class Currency extends ReceiptWrapper {
 
     public void setToUserName(String toUserName) {
         this.toUserName = toUserName;
-    }
-
-    public String getTag() {
-        if(tag != null) return tag.trim();
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     private String getErrorPrefix() {
@@ -409,8 +374,6 @@ public class Currency extends ReceiptWrapper {
         amount = certExtensionDto.getAmount();
         currencyCode = certExtensionDto.getCurrencyCode();
         revocationHash = certExtensionDto.getRevocationHash();
-        timeLimited = certExtensionDto.getTimeLimited();
-        tag = certExtensionDto.getTag().trim();
         currencyServerURL = certExtensionDto.getCurrencyServerURL();
         validFrom = x509AnonymousCert.getNotBefore();
         validTo = x509AnonymousCert.getNotAfter();
@@ -421,8 +384,6 @@ public class Currency extends ReceiptWrapper {
         if(certSubjectDto.getAmount().compareTo(amount) != 0)
             throw new ValidationException("amount: " + amount + " - certSubject: " + subjectDN);
         if(!certSubjectDto.getCurrencyCode().equals(currencyCode))
-            throw new ValidationException("currencyCode: " + currencyCode + " - certSubject: " + subjectDN);
-        if(!certSubjectDto.getTag().equals(certExtensionDto.getTag()))
             throw new ValidationException("currencyCode: " + currencyCode + " - certSubject: " + subjectDN);
         return this;
     }

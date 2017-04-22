@@ -16,22 +16,19 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.currency.android.R;
 import org.currency.dto.ResponseDto;
-import org.currency.dto.TagDto;
 import org.currency.dto.currency.TransactionDto;
 import org.currency.fragment.MessageDialogFragment;
 import org.currency.fragment.ProgressDialogFragment;
-import org.currency.fragment.SelectTagDialogFragment;
 import org.currency.service.PaymentService;
 import org.currency.util.Constants;
 import org.currency.util.MsgUtils;
 import org.currency.util.OperationType;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.UIUtils;
 import org.currency.util.Utils;
 
@@ -49,17 +46,12 @@ public class CurrencyRequesActivity extends AppCompatActivity {
 
     public static final int RC_PASSW          = 0;
 
-    private LinearLayout tag_info;
-    private TextView tag_text;
-    private TagDto tag;
     private TextView msgTextView;
     private TextView currency_text;
-    private Button add_tag_btn;
     private Button submit_form_btn;
     private TextView errorMsgTextView;
     private String broadCastId = CurrencyRequesActivity.class.getSimpleName();
     private EditText amount;
-    private CheckBox time_limited_checkbox;
     private BigDecimal maxValue;
     private BigDecimal defaultValue;
     private String currencyCode = null;
@@ -69,9 +61,6 @@ public class CurrencyRequesActivity extends AppCompatActivity {
         @Override public void onReceive(Context context, Intent intent) {
             LOGD(TAG + ".broadcastReceiver", "extras: " + intent.getExtras());
             final ResponseDto responseDto = intent.getParcelableExtra(Constants.RESPONSE_KEY);
-            TagDto tag = (TagDto) intent.getSerializableExtra(Constants.TAG_KEY);
-            if(tag != null)
-                setTag(tag);
             if(responseDto != null){
                 switch(responseDto.getOperationType()) {
                     case CURRENCY_REQUEST:
@@ -103,23 +92,12 @@ public class CurrencyRequesActivity extends AppCompatActivity {
         maxValue = (BigDecimal) getIntent().getSerializableExtra(Constants.MAX_VALUE_KEY);
         defaultValue = (BigDecimal) getIntent().getSerializableExtra(Constants.DEFAULT_VALUE_KEY);
         currencyCode = getIntent().getStringExtra(Constants.CURRENCY_KEY);
-        tag_text = (TextView)findViewById(R.id.tag_text);
-        tag_info = (LinearLayout)findViewById(R.id.tag_info);
         msgTextView = (TextView)findViewById(R.id.msg);
         amount = (EditText)findViewById(R.id.amount);
         if(defaultValue != null) amount.setText(defaultValue.toString());
         currency_text = (TextView)findViewById(R.id.currency_text);
         currency_text.setText(currencyCode);
-        time_limited_checkbox = (CheckBox)findViewById(R.id.time_limited_checkbox);
         errorMsgTextView = (TextView)findViewById(R.id.errorMsg);
-        add_tag_btn = (Button)findViewById(R.id.add_tag_btn);
-        add_tag_btn.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if(tag == null) SelectTagDialogFragment.showDialog(broadCastId,
-                        getSupportFragmentManager(), SelectTagDialogFragment.TAG);
-                else setTag(null);
-            }
-        });
         submit_form_btn = (Button)findViewById(R.id.submit_form_btn);
         submit_form_btn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
@@ -132,10 +110,6 @@ public class CurrencyRequesActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-        if(savedInstanceState != null) {
-            setTag((TagDto) savedInstanceState.getSerializable(Constants.TAG_KEY));
-        }
         if(getIntent().getStringExtra(Constants.MESSAGE_KEY) == null) {
             msgTextView.setVisibility(View.GONE);
         } else {
@@ -154,26 +128,13 @@ public class CurrencyRequesActivity extends AppCompatActivity {
                     getString(R.string.available_exceded_error_msg), getSupportFragmentManager());
         } else {
             if(selectedAmount.compareTo(new BigDecimal(0)) > 0) {
-                if(tag == null) tag = new TagDto(TagDto.WILDTAG);
-                transactionDto = TransactionDto.CURRENCY_REQUEST(selectedAmount,
-                        currencyCode, tag, time_limited_checkbox.isChecked());
-                Utils.launchPasswordInputActivity(RC_PASSW, MsgUtils.getCurrencyRequestMessage(
-                        transactionDto, CurrencyRequesActivity.this), null, this);
+                transactionDto = TransactionDto.CURRENCY_REQUEST(selectedAmount, currencyCode);
+                Utils.launchPasswordInputActivity(MsgUtils.getCurrencyRequestMessage(
+                        transactionDto, CurrencyRequesActivity.this), null,
+                        PasswordInputStep.PIN_REQUEST, RC_PASSW, this);
             } else errorMsgTextView.setVisibility(View.VISIBLE);
         }
         return true;
-    }
-
-    private void setTag(TagDto tag) {
-        this.tag = tag;
-        if(tag != null) {
-            add_tag_btn.setText(getString(R.string.change_lbl));
-            tag_text.setText(getString(R.string.selected_tag_lbl, tag.getName()));
-            tag_info.setVisibility(View.VISIBLE);
-        } else {
-            add_tag_btn.setText(getString(R.string.add_tag_lbl));
-            tag_info.setVisibility(View.GONE);
-        }
     }
 
     private void setProgressDialogVisible(boolean isVisible, String caption, String message) {
@@ -227,11 +188,6 @@ public class CurrencyRequesActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable(Constants.TAG_KEY, tag);
     }
 
 }

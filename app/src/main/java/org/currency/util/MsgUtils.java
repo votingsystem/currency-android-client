@@ -4,9 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 
-import org.currency.App;
 import org.currency.android.R;
-import org.currency.dto.TagDto;
 import org.currency.dto.currency.TransactionDto;
 import org.currency.model.Currency;
 
@@ -62,22 +60,9 @@ public class MsgUtils {
                 org.currency.util.DateUtils.getDayWeekDateStr(certificate.getNotAfter(), "HH:mm"));
     }
 
-    public static String getTagMessage(String tag) {
-        if(TagDto.WILDTAG.equals(tag))
-            return App.getInstance().getString(R.string.wildtag_lbl);
-        else
-            return tag.toLowerCase();
-    }
-
-    public static String getCurrencyDescriptionMessage(Currency currency, Context context) {
-        return currency.getAmount().toPlainString() + " " + currency.getCurrencyCode() +
-                " " + context.getString(R.string.for_lbl ) + " '" + getTagMessage(currency.getTag()) + "'";
-    }
-
     public static String getCurrencyRequestMessage(TransactionDto transactionDto, Context context) {
-        String tagMessage = getTagMessage(transactionDto.getTag().getName());
         return context.getString(R.string.currency_request_msg, transactionDto.getAmount().toPlainString(),
-                transactionDto.getCurrencyCode(), tagMessage);
+                transactionDto.getCurrencyCode());
     }
 
     public static String getTransactionConfirmMessage(TransactionDto transactionDto, Context context) {
@@ -88,63 +73,33 @@ public class MsgUtils {
     }
 
     public static String getUpdateCurrencyWithErrorMsg(Collection<Currency> currencyWithErrors, Context context) {
-        Map<String, Map<String, BigDecimal>> expendedMap = new HashMap<>();
-        Map<String,  Map<String, BigDecimal>> lapsedMap = new HashMap<>();
-        Map<String,  Map<String, BigDecimal>> unknownMap = new HashMap<>();
+        Map<String, BigDecimal> expendedMap = new HashMap<>();
+        Map<String,  BigDecimal> lapsedMap = new HashMap<>();
+        Map<String,  BigDecimal> unknownMap = new HashMap<>();
         for(Currency currency : currencyWithErrors) {
             switch (currency.getState()) {
                 case LAPSED:
                     if(lapsedMap.containsKey(currency.getCurrencyCode())) {
-                        Map<String, BigDecimal> tagInfo = lapsedMap.get(currency.getCurrencyCode());
-                        if(tagInfo == null) {
-                            tagInfo = new HashMap<>();
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        } else {
-                            BigDecimal tagAccumulated = tagInfo.get(currency.getTag()).add(
-                                    currency.getAmount());
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        }
-                        lapsedMap.put(currency.getCurrencyCode(), tagInfo);
+                        lapsedMap.put(currency.getCurrencyCode(), lapsedMap.get(currency.getCurrencyCode())
+                                .add(currency.getAmount()));
                     } else {
-                        Map<String, BigDecimal> tagInfo = new HashMap<>();
-                        tagInfo.put(currency.getTag(), currency.getAmount());
-                        lapsedMap.put(currency.getCurrencyCode(), tagInfo);
+                        lapsedMap.put(currency.getCurrencyCode(), currency.getAmount());
                     }
                     break;
                 case EXPENDED:
                     if(expendedMap.containsKey(currency.getCurrencyCode())) {
-                        Map<String, BigDecimal> tagInfo = expendedMap.get(currency.getCurrencyCode());
-                        if(tagInfo == null) {
-                            tagInfo = new HashMap<>();
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        } else {
-                            BigDecimal tagAccumulated = tagInfo.get(currency.getTag()).add(
-                                    currency.getAmount());
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        }
-                        expendedMap.put(currency.getCurrencyCode(), tagInfo);
+                        expendedMap.put(currency.getCurrencyCode(), expendedMap.get(currency.getCurrencyCode())
+                                .add(currency.getAmount()));
                     } else {
-                        Map<String, BigDecimal> tagInfo = new HashMap<>();
-                        tagInfo.put(currency.getTag(), currency.getAmount());
-                        expendedMap.put(currency.getCurrencyCode(), tagInfo);
+                        expendedMap.put(currency.getCurrencyCode(), currency.getAmount());
                     }
                     break;
                 case UNKNOWN:
                     if(unknownMap.containsKey(currency.getCurrencyCode())) {
-                        Map<String, BigDecimal> tagInfo = unknownMap.get(currency.getCurrencyCode());
-                        if(tagInfo == null) {
-                            tagInfo = new HashMap<>();
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        } else {
-                            BigDecimal tagAccumulated = tagInfo.get(currency.getTag()).add(
-                                    currency.getAmount());
-                            tagInfo.put(currency.getTag(), currency.getAmount());
-                        }
-                        unknownMap.put(currency.getCurrencyCode(), tagInfo);
+                        unknownMap.put(currency.getCurrencyCode(), unknownMap.get(currency.getCurrencyCode())
+                                .add(currency.getAmount()));
                     } else {
-                        Map<String, BigDecimal> tagInfo = new HashMap<>();
-                        tagInfo.put(currency.getTag(), currency.getAmount());
-                        unknownMap.put(currency.getCurrencyCode(), tagInfo);
+                        unknownMap.put(currency.getCurrencyCode(), currency.getAmount());
                     }
                     break;
                 default:
@@ -152,34 +107,22 @@ public class MsgUtils {
         }
         StringBuilder sb = new StringBuilder();
         if(expendedMap.size() > 0) {
-            for(String currency : expendedMap.keySet()) {
-                Map<String, BigDecimal> tagInfo = expendedMap.get(currency);
-                for(String tag: tagInfo.keySet()) {
-                    sb.append(context.getString(R.string.currency_expended_msg, tagInfo.get(tag).
-                            toString() + " " + currency, getTagMessage(tag)) + "<br/>");
-                }
+            for(String currencyCode : expendedMap.keySet()) {
+                String amountMsg = expendedMap.get(currencyCode) + " " + currencyCode;
+                sb.append(context.getString(R.string.currency_expended_msg, amountMsg) + "<br/>");
 
             }
-
         }
         if(lapsedMap.size() > 0) {
-            for(String currency : lapsedMap.keySet()) {
-                Map<String, BigDecimal> tagInfo = lapsedMap.get(currency);
-                for(String tag: tagInfo.keySet()) {
-                    sb.append(context.getString(R.string.currency_lapsed_msg, tagInfo.get(tag).
-                            toString() + " " + currency, getTagMessage(tag)) + "<br/>");
-
-                }
+            for(String currencyCode : lapsedMap.keySet()) {
+                String amountMsg = lapsedMap.get(currencyCode) + " " + currencyCode;
+                sb.append(context.getString(R.string.currency_lapsed_msg, amountMsg) + "<br/>");
             }
         }
         if(unknownMap.size() > 0) {
-            for(String currency : unknownMap.keySet()) {
-                Map<String, BigDecimal> tagInfo = unknownMap.get(currency);
-                for(String tag: tagInfo.keySet()) {
-                    sb.append(context.getString(R.string.currency_unknown_msg, tagInfo.get(tag).
-                            toString() + " " + currency, getTagMessage(tag)) + "<br/>");
-
-                }
+            for(String currencyCode : unknownMap.keySet()) {
+                String amountMsg = unknownMap.get(currencyCode) + " " + currencyCode;
+                sb.append(context.getString(R.string.currency_unknown_msg, amountMsg) + "<br/>");
             }
         }
         String result = context.getString(R.string.updated_currency_with_error_msg) + ":<br/>" +

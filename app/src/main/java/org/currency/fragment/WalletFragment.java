@@ -28,13 +28,13 @@ import org.currency.App;
 import org.currency.activity.CurrencyActivity;
 import org.currency.android.R;
 import org.currency.dto.ResponseDto;
-import org.currency.dto.currency.IncomesDto;
 import org.currency.model.Currency;
 import org.currency.util.Constants;
 import org.currency.util.DateUtils;
 import org.currency.util.MsgUtils;
+import org.currency.util.PasswordInputStep;
 import org.currency.util.Utils;
-import org.currency.util.Wallet;
+import org.currency.wallet.Wallet;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -100,9 +100,9 @@ public class WalletFragment extends Fragment {
         });
         if(Wallet.getCurrencySet() == null) {
             currencyList = new ArrayList<>();
-            Utils.launchPasswordInputActivity(RC_OPEN_WALLET,
-                    getString(R.string.enter_wallet_password_msg),
-                    null, (AppCompatActivity)getActivity());
+            Utils.launchPasswordInputActivity(
+                    getString(R.string.enter_wallet_password_msg), null,
+                    PasswordInputStep.PIN_REQUEST, RC_OPEN_WALLET, (AppCompatActivity)getActivity());
         } else {
             currencyList = new ArrayList<>(Wallet.getCurrencySet());
             printSummary();
@@ -118,26 +118,19 @@ public class WalletFragment extends Fragment {
         adapter.setItemList(currencyList);
         adapter.notifyDataSetChanged();
         if(menu != null) menu.removeItem(R.id.open_wallet);
-        Map<String, Map<String, IncomesDto>> currencyMap = Wallet.getCurrencyTagMap();
+        //Map<String, Map<String, IncomesDto>> currencyMap = Wallet.getCurrencyCodeMap();
+        Map<String, BigDecimal> currencyMap = Wallet.getCurrencyCodeMap();
         ((LinearLayout)rootView.findViewById(R.id.summary)).removeAllViews();
-        for(String currency : currencyMap.keySet()) {
-            LinearLayout currencyData = (LinearLayout) getActivity().getLayoutInflater().inflate(
+        for(String currencyCode : currencyMap.keySet()) {
+            LinearLayout currencyDataLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(
                     R.layout.wallet_currency_summary, null);
-            Map<String, IncomesDto> tagInfoMap = currencyMap.get(currency);
-            for(String tag : tagInfoMap.keySet()) {
-                String contentFormatted = getString(R.string.tag_info,
-                        (tagInfoMap.get(tag).getTotal()).toPlainString(), currency,
-                        MsgUtils.getTagMessage(tag));
-                if((tagInfoMap.get(tag).getTimeLimited()).compareTo(BigDecimal.ZERO) > 0) {
-                        contentFormatted = contentFormatted + " - " + getString(R.string.tag_info_time_limited,
-                        (tagInfoMap.get(tag).getTimeLimited()).toPlainString(), currency);
-                }
-                TextView tagDataTextView = new TextView(getActivity());
-                tagDataTextView.setGravity(Gravity.CENTER);
-                tagDataTextView.setText(Html.fromHtml(contentFormatted));
-                ((LinearLayout)currencyData.findViewById(R.id.tag_info)).addView(tagDataTextView);
-            }
-            ((LinearLayout)rootView.findViewById(R.id.summary)).addView(currencyData);
+            BigDecimal currencyCodeAmount = currencyMap.get(currencyCode);
+            String contentFormatted = currencyCodeAmount.toPlainString()+ " " + currencyCode;
+            TextView amountTextView = new TextView(getActivity());
+            amountTextView.setGravity(Gravity.CENTER);
+            amountTextView.setText(Html.fromHtml(contentFormatted));
+            ((LinearLayout)currencyDataLayout.findViewById(R.id.tag_info)).addView(amountTextView);
+            ((LinearLayout)rootView.findViewById(R.id.summary)).addView(currencyDataLayout);
         }
         walletLoaded = true;
     }
@@ -174,8 +167,8 @@ public class WalletFragment extends Fragment {
     @Override public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.open_wallet:
-                Utils.launchPasswordInputActivity(RC_OPEN_WALLET, getString(R.string.enter_wallet_password_msg),
-                        null, (AppCompatActivity)getActivity());
+                Utils.launchPasswordInputActivity(getString(R.string.enter_wallet_password_msg), null,
+                        PasswordInputStep.PIN_REQUEST,RC_OPEN_WALLET, (AppCompatActivity)getActivity());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -246,8 +239,6 @@ public class WalletFragment extends Fragment {
                 time_limited_msg.setText(getString(R.string.lapse_lbl,
                         DateUtils.getDayWeekDateStr(currency.getDateTo(), "HH:mm")));
             }
-            ((TextView) view.findViewById(R.id.tag_data)).setText(MsgUtils.getTagMessage(
-                    currency.getTag()));
             return view;
         }
 
