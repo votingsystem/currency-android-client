@@ -32,8 +32,8 @@ public class XmlWriter {
             identityRequestElement.addChild(Node.ELEMENT, indentityServiceElement);
         }
 
-        Element revocationHashElement = doc.createElement("", "RevocationHashBase64");
-        revocationHashElement.addChild(Node.TEXT, identityRequest.getRevocationHashBase64());
+        Element revocationHashElement = doc.createElement("", "RevocationHash");
+        revocationHashElement.addChild(Node.TEXT, identityRequest.getRevocationHash());
         identityRequestElement.addChild(Node.ELEMENT, revocationHashElement);
 
         Element uuidElement = doc.createElement("", "UUID");

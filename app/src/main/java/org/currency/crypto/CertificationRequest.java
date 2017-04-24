@@ -76,7 +76,7 @@ public class CertificationRequest implements java.io.Serializable {
             throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException,
             SignatureException, IOException {
         KeyPair keyPair = KeyGenerator.INSTANCE.genKeyPair();
-        X500Principal subject = new X500Principal("CN=currencyServerURL:" + currencyServerURL +
+        X500Principal subject = new X500Principal("CN=currencyEntity:" + currencyServerURL +
                 ", OU=CURRENCY_VALUE:" + amount + ", OU=CURRENCY_CODE:" + currencyCode +
                 ", OU=DigitalCurrency");
         CurrencyCertExtensionDto dto = new CurrencyCertExtensionDto(amount, currencyCode, revocationHash,

@@ -14,7 +14,7 @@ public class IdentityRequestDto implements Serializable {
 
     private OperationType type;
     private Date date;
-    private String revocationHashBase64;
+    private String revocationHash;
     private String indentityServiceEntity;
     private String callbackServiceEntityId;
     private String UUID;
@@ -40,12 +40,12 @@ public class IdentityRequestDto implements Serializable {
         this.type = type;
     }
 
-    public String getRevocationHashBase64() {
-        return revocationHashBase64;
+    public String getRevocationHash() {
+        return revocationHash;
     }
 
-    public void setRevocationHashBase64(String revocationHashBase64) {
-        this.revocationHashBase64 = revocationHashBase64;
+    public void setRevocationHash(String revocationHash) {
+        this.revocationHash = revocationHash;
     }
 
     public String getUUID() {

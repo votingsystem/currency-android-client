@@ -19,7 +19,7 @@ public class IdentityTokenDto implements Serializable {
     private State state;
     private UserDto user;
     private SystemEntityDto indentityServiceEntity;
-    private String revocationHashBase64;
+    private String revocationHash;
     private String UUID;
     private String base64Data;
 
@@ -49,12 +49,12 @@ public class IdentityTokenDto implements Serializable {
         return this;
     }
 
-    public String getRevocationHashBase64() {
-        return revocationHashBase64;
+    public String getRevocationHash() {
+        return revocationHash;
     }
 
-    public void setRevocationHashBase64(String revocationHashBase64) {
-        this.revocationHashBase64 = revocationHashBase64;
+    public void setRevocationHash(String revocationHash) {
+        this.revocationHash = revocationHash;
     }
 
     public UserDto getUser() {
