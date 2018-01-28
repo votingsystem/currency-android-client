@@ -1,14 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "26.0.2"
+
     defaultConfig {
         applicationId "org.currency.android"
+        compileSdkVersion 26
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 26
+        buildToolsVersion "26.0.2"
         versionCode 1
         versionName "1.0"
+        sourceCompatibility = JavaVersion.VERSION_1_7
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -30,7 +32,7 @@ android {
 
 
 ext {
-    supportLibVersion = "25.3.1"
+    supportLibVersion = "26.1.0"
 }
 
 dependencies {
